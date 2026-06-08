@@ -80,6 +80,30 @@ fn build_joltc() {
         config.generator("Ninja");
     }
 
+    // Native iOS cross-compile setup. cargo targets aarch64-apple-ios (device)
+    // and aarch64-apple-ios-sim (simulator on Apple Silicon); x86_64-apple-ios
+    // is the legacy Intel-Mac simulator path. Without this, CMake builds
+    // against the macOS SDK and the resulting static libs fail at link time
+    // with undefined symbol errors for every iOS-specific runtime symbol.
+    if target_os == "ios" {
+        config.define("CMAKE_SYSTEM_NAME", "iOS");
+        let osx_arch = match target_arch.as_str() {
+            "aarch64" => "arm64",
+            "x86_64" => "x86_64",
+            _ => panic!("unsupported iOS target arch: {target_arch}"),
+        };
+        config.define("CMAKE_OSX_ARCHITECTURES", osx_arch);
+        let target_abi = env::var("CARGO_CFG_TARGET_ABI").unwrap_or_default();
+        let sysroot = if target_abi == "sim" || target_arch == "x86_64" {
+            "iphonesimulator"
+        } else {
+            "iphoneos"
+        };
+        config.define("CMAKE_OSX_SYSROOT", sysroot);
+        config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "12.0");
+        config.generator("Ninja");
+    }
+
     // Having IPO/LTO turned on breaks lld on Windows.
     config.define("INTERPROCEDURAL_OPTIMIZATION", "OFF");
 
@@ -97,6 +121,10 @@ fn build_joltc() {
 
     if cfg!(feature = "asserts") {
         config.define("USE_ASSERTS", "ON");
+    }
+
+    if cfg!(feature = "cross-platform-deterministic") {
+        config.define("CROSS_PLATFORM_DETERMINISTIC", "ON");
     }
 
     let mut dst = config.build();
@@ -125,8 +153,10 @@ fn build_joltc() {
 }
 
 fn link() {
-    println!("cargo:rustc-link-lib=Jolt");
+    // joltc references Jolt symbols, so joltc must come before Jolt for
+    // GNU ld's left-to-right symbol resolution to work on Linux.
     println!("cargo:rustc-link-lib=joltc");
+    println!("cargo:rustc-link-lib=Jolt");
 }
 
 /// Generate build flags specifically for generating bindings.
@@ -155,6 +185,10 @@ fn build_flags() -> Vec<(&'static str, &'static str)> {
 }
 
 fn generate_bindings(flags: &[(&'static str, &'static str)]) -> anyhow::Result<()> {
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+    let target_abi = env::var("CARGO_CFG_TARGET_ABI").unwrap_or_default();
+
     let mut builder = bindgen::Builder::default()
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .header("JoltC/JoltC/JoltC.h")
@@ -162,6 +196,31 @@ fn generate_bindings(flags: &[(&'static str, &'static str)]) -> anyhow::Result<(
         .allowlist_item("JPC_.*")
         .default_enum_style(bindgen::EnumVariation::Consts)
         .prepend_enum_name(false);
+
+    // rustc's iOS simulator triple `aarch64-apple-ios-sim` is not valid clang
+    // syntax. Translate to clang's form and pass the sysroot so system headers
+    // resolve correctly.
+    if target_os == "ios" {
+        let clang_target = match (target_arch.as_str(), target_abi.as_str()) {
+            ("aarch64", "sim") => "arm64-apple-ios-simulator",
+            ("aarch64", _) => "arm64-apple-ios",
+            ("x86_64", _) => "x86_64-apple-ios-simulator",
+            _ => panic!("unsupported iOS arch/abi: {target_arch}/{target_abi}"),
+        };
+        builder = builder.clang_arg(format!("--target={clang_target}"));
+
+        let sdk_name = if target_abi == "sim" || target_arch == "x86_64" {
+            "iphonesimulator"
+        } else {
+            "iphoneos"
+        };
+        let sdk_output = std::process::Command::new("xcrun")
+            .args(["--sdk", sdk_name, "--show-sdk-path"])
+            .output()
+            .with_context(|| format!("failed to invoke `xcrun --sdk {sdk_name}`"))?;
+        let sdk_path = String::from_utf8(sdk_output.stdout).context("xcrun output is not utf-8")?;
+        builder = builder.clang_arg(format!("-isysroot{}", sdk_path.trim()));
+    }
 
     for (key, value) in flags {
         builder = builder.clang_arg(format!("-D{key}={value}"));
