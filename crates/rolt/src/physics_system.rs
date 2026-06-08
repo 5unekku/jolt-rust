@@ -2,9 +2,11 @@ use std::ptr;
 
 use joltc_sys::*;
 
+use crate::{IntoJolt, IntoRolt};
 use crate::{
-    BodyInterface, BroadPhaseLayerInterfaceImpl, ContactListenerImpl, NarrowPhaseQuery,
-    ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl, SimShapeFilterImpl,
+    BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl, ContactListenerImpl,
+    NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
+    SimShapeFilterImpl, StateRecorder,
 };
 
 /// The root of everything for a physics simulation.
@@ -102,9 +104,41 @@ impl PhysicsSystem {
     }
 
     pub fn optimize_broad_phase(&self) {
-        unsafe {
-            JPC_PhysicsSystem_OptimizeBroadPhase(self.raw);
-        }
+        unsafe { JPC_PhysicsSystem_OptimizeBroadPhase(self.raw) }
+    }
+
+    pub fn gravity(&self) -> crate::Vec3 {
+        unsafe { JPC_PhysicsSystem_GetGravity(self.raw).into_rolt() }
+    }
+
+    pub fn set_gravity(&self, gravity: crate::Vec3) {
+        unsafe { JPC_PhysicsSystem_SetGravity(self.raw, gravity.into_jolt()) }
+    }
+
+    pub fn num_bodies(&self) -> u32 {
+        unsafe { JPC_PhysicsSystem_GetNumBodies(self.raw) }
+    }
+
+    pub fn num_active_bodies(&self, body_type: JPC_BodyType) -> u32 {
+        unsafe { JPC_PhysicsSystem_GetNumActiveBodies(self.raw, body_type) }
+    }
+
+    /// Return all body IDs in the simulation.
+    pub fn bodies(&self) -> Vec<crate::BodyId> {
+        let mut count = 0u32;
+        unsafe { JPC_PhysicsSystem_GetBodies(self.raw, ptr::null_mut(), &mut count) }
+        let mut ids = vec![0u32; count as usize];
+        unsafe { JPC_PhysicsSystem_GetBodies(self.raw, ids.as_mut_ptr(), &mut count) }
+        ids.into_iter().map(crate::BodyId::new).collect()
+    }
+
+    /// Return all active body IDs of the given type.
+    pub fn active_bodies(&self, body_type: JPC_BodyType) -> Vec<crate::BodyId> {
+        let mut count = 0u32;
+        unsafe { JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ptr::null_mut(), &mut count) }
+        let mut ids = vec![0u32; count as usize];
+        unsafe { JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ids.as_mut_ptr(), &mut count) }
+        ids.into_iter().map(crate::BodyId::new).collect()
     }
 
     /// # Safety
@@ -164,11 +198,28 @@ impl PhysicsSystem {
         }
     }
 
+    pub fn body_lock_interface(&self) -> BodyLockInterface<'_> {
+        unsafe {
+            let raw = JPC_PhysicsSystem_GetBodyLockInterface(self.raw);
+            BodyLockInterface::new(raw)
+        }
+    }
+
     pub fn narrow_phase_query(&self) -> NarrowPhaseQuery<'_> {
         unsafe {
             let raw = JPC_PhysicsSystem_GetNarrowPhaseQuery(self.raw);
             NarrowPhaseQuery::new(raw)
         }
+    }
+
+    /// Serialize the physics state into `recorder`.
+    pub fn save_state(&self, recorder: &mut StateRecorder) {
+        unsafe { JPC_PhysicsSystem_SaveState(self.raw, recorder.raw()) }
+    }
+
+    /// Restore physics state from `recorder`.  Returns `false` on failure.
+    pub fn restore_state(&mut self, recorder: &mut StateRecorder) -> bool {
+        unsafe { JPC_PhysicsSystem_RestoreState(self.raw, recorder.raw()) }
     }
 
     pub fn raw(&self) -> *mut JPC_PhysicsSystem {

@@ -1,11 +1,9 @@
-use joltc_sys::{JPC_Color, JPC_DVec3, JPC_Mat44, JPC_Quat, JPC_Vec3, JPC_Vec4};
+use joltc_sys::{JPC_Color, JPC_DVec3, JPC_Mat44, JPC_Quat, JPC_Vec2, JPC_Vec3, JPC_Vec4};
 
-/// The type used for representing world space values.
-///
-/// Either `f32` (default) or `f64` (`double-precision` feature).
+#[allow(unused_imports)]
 pub use joltc_sys::Real;
 
-pub use glam::{DVec3, Mat4, Quat, Vec3, Vec4};
+pub use glam::{DVec3, DMat4, Mat4, Quat, Vec2, Vec3, Vec4};
 
 use crate::{FromJolt, IntoJolt};
 
@@ -129,6 +127,60 @@ impl FromJolt for Mat4 {
             Vec4::from_jolt(value.col[1]),
             Vec4::from_jolt(value.col[2]),
             Vec3::from_jolt(value.col3).extend(1.0),
+        )
+    }
+}
+
+impl IntoJolt for Vec2 {
+    type Jolt = JPC_Vec2;
+
+    fn into_jolt(self) -> Self::Jolt {
+        JPC_Vec2 { x: self.x, y: self.y }
+    }
+}
+
+impl FromJolt for Vec2 {
+    type Jolt = JPC_Vec2;
+
+    fn from_jolt(value: Self::Jolt) -> Self {
+        Vec2::new(value.x, value.y)
+    }
+}
+
+/// World-space 4x4 matrix — `Mat4` in single-precision, `DMat4` in double-precision.
+#[cfg(feature = "double-precision")]
+pub type RMat4 = DMat4;
+
+/// World-space 4x4 matrix — `Mat4` in single-precision, `DMat4` in double-precision.
+#[cfg(not(feature = "double-precision"))]
+pub type RMat4 = Mat4;
+
+#[cfg(feature = "double-precision")]
+impl IntoJolt for DMat4 {
+    type Jolt = joltc_sys::JPC_DMat44;
+
+    fn into_jolt(self) -> Self::Jolt {
+        joltc_sys::JPC_DMat44 {
+            col: [
+                Vec4::new(self.x_axis.x as f32, self.x_axis.y as f32, self.x_axis.z as f32, self.x_axis.w as f32).into_jolt(),
+                Vec4::new(self.y_axis.x as f32, self.y_axis.y as f32, self.y_axis.z as f32, self.y_axis.w as f32).into_jolt(),
+                Vec4::new(self.z_axis.x as f32, self.z_axis.y as f32, self.z_axis.z as f32, self.z_axis.w as f32).into_jolt(),
+            ],
+            col3: DVec3::new(self.w_axis.x, self.w_axis.y, self.w_axis.z).into_jolt(),
+        }
+    }
+}
+
+#[cfg(feature = "double-precision")]
+impl FromJolt for DMat4 {
+    type Jolt = joltc_sys::JPC_DMat44;
+
+    fn from_jolt(value: Self::Jolt) -> Self {
+        DMat4::from_cols(
+            glam::DVec4::new(value.col[0].x as f64, value.col[0].y as f64, value.col[0].z as f64, value.col[0].w as f64),
+            glam::DVec4::new(value.col[1].x as f64, value.col[1].y as f64, value.col[1].z as f64, value.col[1].w as f64),
+            glam::DVec4::new(value.col[2].x as f64, value.col[2].y as f64, value.col[2].z as f64, value.col[2].w as f64),
+            glam::DVec4::new(value.col3.x, value.col3.y, value.col3.z, 1.0),
         )
     }
 }

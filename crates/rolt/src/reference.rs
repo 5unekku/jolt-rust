@@ -57,6 +57,72 @@ unsafe impl RefTarget for JPC_MutableCompoundShape {
     }
 }
 
+unsafe impl RefTarget for JPC_Constraint {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_Constraint_AddRef(value);
+    }
+
+    unsafe fn release(value: *const Self) {
+        JPC_Constraint_Release(value);
+    }
+}
+
+/// Implement RefTarget for a concrete constraint type by casting to JPC_Constraint.
+macro_rules! impl_constraint_ref_target {
+    ($t:ty) => {
+        unsafe impl RefTarget for $t {
+            unsafe fn add_ref(value: *const Self) {
+                JPC_Constraint_AddRef(value.cast::<JPC_Constraint>());
+            }
+            unsafe fn release(value: *const Self) {
+                JPC_Constraint_Release(value.cast::<JPC_Constraint>());
+            }
+        }
+        unsafe impl RefCast<JPC_Constraint> for $t {
+            fn cast(value: *const Self) -> *const JPC_Constraint { value.cast() }
+            fn cast_mut(value: *mut Self) -> *mut JPC_Constraint { value.cast() }
+        }
+    };
+}
+
+impl_constraint_ref_target!(JPC_HingeConstraint);
+impl_constraint_ref_target!(JPC_SliderConstraint);
+impl_constraint_ref_target!(JPC_DistanceConstraint);
+impl_constraint_ref_target!(JPC_PointConstraint);
+impl_constraint_ref_target!(JPC_ConeConstraint);
+impl_constraint_ref_target!(JPC_PulleyConstraint);
+impl_constraint_ref_target!(JPC_GearConstraint);
+impl_constraint_ref_target!(JPC_RackAndPinionConstraint);
+impl_constraint_ref_target!(JPC_SwingTwistConstraint);
+impl_constraint_ref_target!(JPC_PathConstraint);
+
+unsafe impl RefTarget for JPC_SoftBodySharedSettings {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_SoftBodySharedSettings_AddRef(value);
+    }
+    unsafe fn release(value: *const Self) {
+        JPC_SoftBodySharedSettings_Release(value);
+    }
+}
+
+unsafe impl RefTarget for JPC_PhysicsMaterial {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_PhysicsMaterial_AddRef(value);
+    }
+    unsafe fn release(value: *const Self) {
+        JPC_PhysicsMaterial_Release(value);
+    }
+}
+
+unsafe impl RefTarget for JPC_RagdollSettings {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_RagdollSettings_AddRef(value);
+    }
+    unsafe fn release(value: *const Self) {
+        JPC_RagdollSettings_Release(value);
+    }
+}
+
 /// Rust equivalent to Jolt's [`RefConst`](https://jrouwe.github.io/JoltPhysicsDocs/5.1.0/class_ref_const.html)
 pub struct RefConst<T: RefTarget> {
     ptr: *const T,
@@ -70,6 +136,16 @@ impl<T: RefTarget> RefConst<T> {
     /// `ptr` must be valid.
     pub unsafe fn from_active(ptr: *const T) -> Self {
         T::add_ref(ptr);
+        Self { ptr }
+    }
+
+    /// Take ownership over a pointer that already has a reference counted for you.
+    /// Use when the C API already called AddRef before returning the pointer.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must be valid and have an outstanding reference owned by the caller.
+    pub unsafe fn from_addrefed(ptr: *const T) -> Self {
         Self { ptr }
     }
 
@@ -129,6 +205,16 @@ impl<T: RefTarget> Ref<T> {
     /// `ptr` must be valid.
     pub unsafe fn from_active(ptr: *mut T) -> Self {
         T::add_ref(ptr);
+        Self { ptr }
+    }
+
+    /// Take ownership over a pointer that already has a reference counted for you.
+    /// Use when the C API already called AddRef before returning the pointer.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must be valid and have an outstanding reference owned by the caller.
+    pub unsafe fn from_addrefed(ptr: *mut T) -> Self {
         Self { ptr }
     }
 

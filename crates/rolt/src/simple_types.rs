@@ -33,11 +33,18 @@ impl BroadPhaseLayer {
 pub struct BodyId(JPC_BodyID);
 
 impl BodyId {
+    /// The sentinel value Jolt uses for an unassigned body ID.
+    pub const INVALID: Self = Self(0xffffffff);
+
     pub const fn new(value: JPC_BodyID) -> Self {
         Self(value)
     }
 
     pub const fn raw(self) -> JPC_BodyID {
         self.0
+    }
+
+    pub const fn is_invalid(self) -> bool {
+        self.0 == 0xffffffff
     }
 }
