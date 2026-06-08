@@ -2,7 +2,99 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{Body, BodyId, IntoJolt, IntoRolt, ObjectLayer, Quat, RMat4, RVec3, Vec3};
+use crate::{Body, BodyId, FromJolt, IntoJolt, IntoRolt, ObjectLayer, Quat, RMat4, RefConst, RVec3, Vec3};
+
+/// Settings used to create a physics body.
+///
+/// Owns the shape via [`RefConst`] so the raw pointer in the inner JPC struct is always valid,
+/// making [`BodyInterface::create_body`] and [`BodyInterface::create_and_add_body`] safe to call.
+///
+/// See also: Jolt's [`BodyCreationSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body_creation_settings.html) class.
+pub struct BodyCreationSettings {
+    pub(crate) raw: JPC_BodyCreationSettings,
+    shape: Option<RefConst<JPC_Shape>>,
+}
+
+impl BodyCreationSettings {
+    /// Convenience constructor: sets the shape, layer, and motion type; everything else is default.
+    pub fn new(shape: &RefConst<JPC_Shape>, layer: ObjectLayer, motion_type: JPC_MotionType) -> Self {
+        let mut s = Self::default();
+        s.set_shape(shape);
+        s.raw.ObjectLayer = layer.raw();
+        s.raw.MotionType = motion_type;
+        s
+    }
+
+    /// Set the shape, keeping it alive for the lifetime of these settings.
+    pub fn set_shape(&mut self, shape: &RefConst<JPC_Shape>) {
+        self.shape = Some(shape.clone());
+        self.raw.Shape = shape.get();
+    }
+
+    /// Call `f` with the raw JPC settings pointer — for joltc-sys power users.
+    pub fn with_raw<R>(&self, f: impl FnOnce(*const JPC_BodyCreationSettings) -> R) -> R {
+        f(&self.raw)
+    }
+
+    pub fn position(&self) -> RVec3 { self.raw.Position.into_rolt() }
+    pub fn set_position(&mut self, v: RVec3) { self.raw.Position = v.into_jolt(); }
+    pub fn rotation(&self) -> Quat { Quat::from_jolt(self.raw.Rotation) }
+    pub fn set_rotation(&mut self, v: Quat) { self.raw.Rotation = v.into_jolt(); }
+    pub fn linear_velocity(&self) -> Vec3 { self.raw.LinearVelocity.into_rolt() }
+    pub fn set_linear_velocity(&mut self, v: Vec3) { self.raw.LinearVelocity = v.into_jolt(); }
+    pub fn angular_velocity(&self) -> Vec3 { self.raw.AngularVelocity.into_rolt() }
+    pub fn set_angular_velocity(&mut self, v: Vec3) { self.raw.AngularVelocity = v.into_jolt(); }
+    pub fn user_data(&self) -> u64 { self.raw.UserData }
+    pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn object_layer(&self) -> ObjectLayer { ObjectLayer::new(self.raw.ObjectLayer) }
+    pub fn set_object_layer(&mut self, v: ObjectLayer) { self.raw.ObjectLayer = v.raw(); }
+    pub fn motion_type(&self) -> JPC_MotionType { self.raw.MotionType }
+    pub fn set_motion_type(&mut self, v: JPC_MotionType) { self.raw.MotionType = v; }
+    pub fn allowed_dofs(&self) -> JPC_AllowedDOFs { self.raw.AllowedDOFs }
+    pub fn set_allowed_dofs(&mut self, v: JPC_AllowedDOFs) { self.raw.AllowedDOFs = v; }
+    pub fn allow_dynamic_or_kinematic(&self) -> bool { self.raw.AllowDynamicOrKinematic }
+    pub fn set_allow_dynamic_or_kinematic(&mut self, v: bool) { self.raw.AllowDynamicOrKinematic = v; }
+    pub fn is_sensor(&self) -> bool { self.raw.IsSensor }
+    pub fn set_is_sensor(&mut self, v: bool) { self.raw.IsSensor = v; }
+    pub fn collide_kinematic_vs_non_dynamic(&self) -> bool { self.raw.CollideKinematicVsNonDynamic }
+    pub fn set_collide_kinematic_vs_non_dynamic(&mut self, v: bool) { self.raw.CollideKinematicVsNonDynamic = v; }
+    pub fn use_manifold_reduction(&self) -> bool { self.raw.UseManifoldReduction }
+    pub fn set_use_manifold_reduction(&mut self, v: bool) { self.raw.UseManifoldReduction = v; }
+    pub fn apply_gyroscopic_force(&self) -> bool { self.raw.ApplyGyroscopicForce }
+    pub fn set_apply_gyroscopic_force(&mut self, v: bool) { self.raw.ApplyGyroscopicForce = v; }
+    pub fn motion_quality(&self) -> JPC_MotionQuality { self.raw.MotionQuality }
+    pub fn set_motion_quality(&mut self, v: JPC_MotionQuality) { self.raw.MotionQuality = v; }
+    pub fn enhanced_internal_edge_removal(&self) -> bool { self.raw.EnhancedInternalEdgeRemoval }
+    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) { self.raw.EnhancedInternalEdgeRemoval = v; }
+    pub fn allow_sleeping(&self) -> bool { self.raw.AllowSleeping }
+    pub fn set_allow_sleeping(&mut self, v: bool) { self.raw.AllowSleeping = v; }
+    pub fn friction(&self) -> f32 { self.raw.Friction }
+    pub fn set_friction(&mut self, v: f32) { self.raw.Friction = v; }
+    pub fn restitution(&self) -> f32 { self.raw.Restitution }
+    pub fn set_restitution(&mut self, v: f32) { self.raw.Restitution = v; }
+    pub fn linear_damping(&self) -> f32 { self.raw.LinearDamping }
+    pub fn set_linear_damping(&mut self, v: f32) { self.raw.LinearDamping = v; }
+    pub fn angular_damping(&self) -> f32 { self.raw.AngularDamping }
+    pub fn set_angular_damping(&mut self, v: f32) { self.raw.AngularDamping = v; }
+    pub fn max_linear_velocity(&self) -> f32 { self.raw.MaxLinearVelocity }
+    pub fn set_max_linear_velocity(&mut self, v: f32) { self.raw.MaxLinearVelocity = v; }
+    pub fn max_angular_velocity(&self) -> f32 { self.raw.MaxAngularVelocity }
+    pub fn set_max_angular_velocity(&mut self, v: f32) { self.raw.MaxAngularVelocity = v; }
+    pub fn gravity_factor(&self) -> f32 { self.raw.GravityFactor }
+    pub fn set_gravity_factor(&mut self, v: f32) { self.raw.GravityFactor = v; }
+    pub fn override_mass_properties(&self) -> JPC_OverrideMassProperties { self.raw.OverrideMassProperties }
+    pub fn set_override_mass_properties(&mut self, v: JPC_OverrideMassProperties) { self.raw.OverrideMassProperties = v; }
+    pub fn inertia_multiplier(&self) -> f32 { self.raw.InertiaMultiplier }
+    pub fn set_inertia_multiplier(&mut self, v: f32) { self.raw.InertiaMultiplier = v; }
+}
+
+impl Default for BodyCreationSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_BodyCreationSettings>() };
+        unsafe { JPC_BodyCreationSettings_default(&mut raw) };
+        Self { raw, shape: None }
+    }
+}
 
 /// See also: Jolt's [`BodyInterface`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body_interface.html) class.
 pub struct BodyInterface<'physics_system> {
@@ -17,10 +109,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
 
     // --- body lifecycle ---
 
-    /// # Safety
-    /// `settings` must be initialized and valid, with a valid `Shape` pointer.
-    pub unsafe fn create_body(&self, settings: &JPC_BodyCreationSettings) -> Option<Body<'physics_system>> {
-        let raw = JPC_BodyInterface_CreateBody(self.raw, settings);
+    pub fn create_body(&self, settings: &BodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateBody(self.raw, &settings.raw) };
         if raw.is_null() { None } else { Some(Body::new(raw)) }
     }
 
@@ -37,10 +127,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
     }
 
     /// Create, add, and return the body ID in one call.
-    /// # Safety
-    /// `settings` must be initialized and valid, with a valid `Shape` pointer.
-    pub unsafe fn create_and_add_body(&self, settings: &JPC_BodyCreationSettings, activation: JPC_Activation) -> BodyId {
-        BodyId::new(JPC_BodyInterface_CreateAndAddBody(self.raw, settings, activation))
+    pub fn create_and_add_body(&self, settings: &BodyCreationSettings, activation: JPC_Activation) -> BodyId {
+        BodyId::new(unsafe { JPC_BodyInterface_CreateAndAddBody(self.raw, &settings.raw, activation) })
     }
 
     pub fn is_added(&self, body_id: BodyId) -> bool {
