@@ -1,6 +1,39 @@
 use joltc_sys::*;
 
-use crate::{BodyId, IntoJolt, IntoRolt, Quat, RVec3, Vec3};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Quat, RVec3, Vec3};
+
+/// Settings for [`CharacterVirtual::extended_update`].
+///
+/// See also: Jolt's [`ExtendedUpdateSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_character_virtual_1_1_extended_update_settings.html) struct.
+pub struct ExtendedUpdateSettings(pub JPC_ExtendedUpdateSettings);
+
+impl ExtendedUpdateSettings {
+    pub fn step_down(&self) -> Vec3 { Vec3::from_jolt(self.0.StickToFloorStepDown) }
+    pub fn set_step_down(&mut self, v: Vec3) { self.0.StickToFloorStepDown = v.into_jolt(); }
+
+    pub fn step_up(&self) -> Vec3 { Vec3::from_jolt(self.0.WalkStairsStepUp) }
+    pub fn set_step_up(&mut self, v: Vec3) { self.0.WalkStairsStepUp = v.into_jolt(); }
+
+    pub fn min_step_forward(&self) -> f32 { self.0.WalkStairsMinStepForward }
+    pub fn set_min_step_forward(&mut self, v: f32) { self.0.WalkStairsMinStepForward = v; }
+
+    pub fn step_forward_test(&self) -> f32 { self.0.WalkStairsStepForwardTest }
+    pub fn set_step_forward_test(&mut self, v: f32) { self.0.WalkStairsStepForwardTest = v; }
+
+    pub fn cos_angle_forward_contact(&self) -> f32 { self.0.WalkStairsCosAngleForwardContact }
+    pub fn set_cos_angle_forward_contact(&mut self, v: f32) { self.0.WalkStairsCosAngleForwardContact = v; }
+
+    pub fn step_down_extra(&self) -> Vec3 { Vec3::from_jolt(self.0.WalkStairsStepDownExtra) }
+    pub fn set_step_down_extra(&mut self, v: Vec3) { self.0.WalkStairsStepDownExtra = v.into_jolt(); }
+}
+
+impl Default for ExtendedUpdateSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_ExtendedUpdateSettings>() };
+        unsafe { JPC_ExtendedUpdateSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
 
 /// See also: Jolt's [`CharacterVirtual`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character_virtual.html) class.
 pub struct CharacterVirtual {
