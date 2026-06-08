@@ -5,10 +5,10 @@
 //! crate contains the unsafe bindings that this crate uses and covers a lot
 //! more of Jolt's API.
 //!
-//! These bindings target Jolt Physics 5.1.0. You can view the C++ documentation
+//! These bindings target Jolt Physics 5.5.0. You can view the C++ documentation
 //! for this version of Jolt Physics here:
 //!
-//! <https://jrouwe.github.io/JoltPhysicsDocs/5.1.0/>
+//! <https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/>
 
 use joltc_sys::*;
 
