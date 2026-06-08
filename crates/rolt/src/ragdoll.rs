@@ -60,6 +60,12 @@ impl RagdollSettings {
         if raw.is_null() { None } else { Some(Ragdoll { raw }) }
     }
 
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_RagdollSettings) -> R) -> R {
+        f(self.raw)
+    }
+
     pub fn raw(&self) -> *mut JPC_RagdollSettings {
         self.raw
     }
@@ -170,6 +176,12 @@ impl Ragdoll {
         }
         let mats = raw_mats.into_iter().map(Mat4::from_jolt).collect();
         (root_offset.into_rolt(), mats)
+    }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Ragdoll) -> R) -> R {
+        f(self.raw)
     }
 
     pub fn raw(&self) -> *mut JPC_Ragdoll {

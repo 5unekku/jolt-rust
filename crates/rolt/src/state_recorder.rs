@@ -39,6 +39,12 @@ impl StateRecorder {
         unsafe { JPC_StateRecorder_GetDataSize(self.raw) }
     }
 
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_StateRecorder) -> R) -> R {
+        f(self.raw)
+    }
+
     pub fn raw(&self) -> *mut JPC_StateRecorder {
         self.raw
     }

@@ -93,6 +93,12 @@ impl SoftBodySharedSettings {
         unsafe { JPC_SoftBodySharedSettings_CalculateSkinnedConstraintNormals(*self.0) }
     }
 
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SoftBodySharedSettings) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_SoftBodySharedSettings {
         *self.0
     }

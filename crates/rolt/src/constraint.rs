@@ -15,7 +15,12 @@ impl Constraint {
     pub fn constraint_priority(&self) -> u32 { unsafe { JPC_Constraint_GetConstraintPriority(*self.0) } }
     pub fn set_constraint_priority(&self, priority: u32) { unsafe { JPC_Constraint_SetConstraintPriority(*self.0, priority) } }
 
-    /// The raw pointer — pass to [`PhysicsSystem::add_constraint`][crate::PhysicsSystem::add_constraint].
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_Constraint { *self.0 }
 }
 
@@ -49,6 +54,13 @@ impl FixedConstraint {
     }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_Constraint { *self.0 }
 }
 
@@ -82,6 +94,13 @@ impl DistanceConstraint {
     }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_DistanceConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_DistanceConstraint { *self.0 }
 }
 
@@ -113,6 +132,13 @@ impl HingeConstraint {
     pub fn set_max_friction_torque(&self, torque: f32) { unsafe { JPC_HingeConstraint_SetMaxFrictionTorque(*self.0, torque) } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_HingeConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_HingeConstraint { *self.0 }
 }
 
@@ -144,6 +170,13 @@ impl SliderConstraint {
     pub fn set_max_friction_force(&self, force: f32) { unsafe { JPC_SliderConstraint_SetMaxFrictionForce(*self.0, force) } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SliderConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_SliderConstraint { *self.0 }
 }
 
@@ -164,6 +197,13 @@ impl PointConstraint {
     pub fn local_space_point2(&self) -> Vec3 { unsafe { JPC_PointConstraint_GetLocalSpacePoint2(*self.0).into_rolt() } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PointConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_PointConstraint { *self.0 }
 }
 
@@ -292,6 +332,13 @@ impl SixDofConstraint {
     }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_Constraint { *self.0 }
 }
 
@@ -309,6 +356,13 @@ impl SwingTwistConstraint {
     }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SwingTwistConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_SwingTwistConstraint { *self.0 }
 }
 
@@ -329,6 +383,13 @@ impl ConeConstraint {
     pub fn cos_half_cone_angle(&self) -> f32 { unsafe { JPC_ConeConstraint_GetCosHalfConeAngle(*self.0) } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_ConeConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_ConeConstraint { *self.0 }
 }
 
@@ -348,6 +409,13 @@ impl PulleyConstraint {
     pub fn current_length(&self) -> f32 { unsafe { JPC_PulleyConstraint_GetCurrentLength(*self.0) } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PulleyConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_PulleyConstraint { *self.0 }
 }
 
@@ -369,5 +437,12 @@ impl PathConstraint {
     pub fn set_max_friction_force(&self, force: f32) { unsafe { JPC_PathConstraint_SetMaxFrictionForce(*self.0, force) } }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    /// # Safety
+    /// See [`Ref::with_raw`].
+    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PathConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
     pub fn raw(&self) -> *mut JPC_PathConstraint { *self.0 }
 }
