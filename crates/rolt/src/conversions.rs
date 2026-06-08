@@ -1,4 +1,4 @@
-/// Trait for converting a value from its corresponding [`joltc-sys`] type.
+/// Trait for converting a value from its corresponding [`joltc_sys`] type.
 pub trait FromJolt {
     type Jolt;
 
