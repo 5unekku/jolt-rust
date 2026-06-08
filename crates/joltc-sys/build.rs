@@ -74,10 +74,6 @@ fn build_joltc() {
         };
         config.define("ANDROID_ABI", android_abi);
         config.define("ANDROID_PLATFORM", "android-21");
-        // cmake-rs defaults to the host-OS generator (MSBuild on Win);
-        // the NDK toolchain only supports Ninja / Makefiles. Force
-        // Ninja explicitly.
-        config.generator("Ninja");
     }
 
     // Native iOS cross-compile setup. cargo targets aarch64-apple-ios (device)
@@ -101,7 +97,6 @@ fn build_joltc() {
         };
         config.define("CMAKE_OSX_SYSROOT", sysroot);
         config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "12.0");
-        config.generator("Ninja");
     }
 
     // prefer ninja over make on unix — faster and more predictable.
