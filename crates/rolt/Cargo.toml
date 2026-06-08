@@ -3,7 +3,7 @@ name = "rolt"
 description = "Safe(-ish) bindings to Jolt Physics"
 version = "0.3.1+Jolt-5.0.0"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/SecondHalfGames/jolt-rust"
+repository = "https://github.com/5unekku/jolt-rust"
 edition = "2021"
 
 [features]

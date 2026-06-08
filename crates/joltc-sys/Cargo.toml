@@ -3,7 +3,7 @@ name = "joltc-sys"
 description = "Unsafe bindings to Jolt Physics using JoltC"
 version = "0.3.1+Jolt-5.0.0"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/SecondHalfGames/jolt-rust"
+repository = "https://github.com/5unekku/jolt-rust"
 edition = "2021"
 
 exclude = ["JoltC/JoltPhysics/Assets", "JoltC/JoltPhysics/TestFramework", "JoltC/JoltPhysics/Samples", "JoltC/JoltPhysics/UnitTests"]

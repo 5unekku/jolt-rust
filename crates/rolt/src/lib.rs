@@ -1,5 +1,5 @@
 //! Safe Rust wrapper around [Jolt Physics](github.com/jrouwe/JoltPhysics) using
-//! [JoltC](https://github.com/SecondHalfGames/JoltC).
+//! [JoltC](https://github.com/5unekku/JoltC).
 //!
 //! These bindings are best-effort and incomplete. The [`joltc_sys`]
 //! crate contains the unsafe bindings that this crate uses and covers a lot
