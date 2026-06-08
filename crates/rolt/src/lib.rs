@@ -23,6 +23,7 @@ mod shape;
 mod simple_types;
 mod state_recorder;
 mod traits;
+mod vehicle;
 
 pub use crate::body::*;
 pub use crate::body_interface::*;
@@ -38,6 +39,7 @@ pub use crate::shape::*;
 pub use crate::simple_types::*;
 pub use crate::state_recorder::*;
 pub use crate::traits::*;
+pub use crate::vehicle::*;
 
 /// [`JPH::RegisterDefaultAllocator`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/_memory_8h.html)
 pub fn register_default_allocator() {

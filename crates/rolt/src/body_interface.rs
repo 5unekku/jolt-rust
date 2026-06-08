@@ -275,5 +275,30 @@ impl<'physics_system> BodyInterface<'physics_system> {
         unsafe { JPC_BodyInterface_InvalidateContactCache(self.raw, body_id.raw()) }
     }
 
+    // --- soft body ---
+
+    /// Create a soft body (does not add it — call `add_body` separately).
+    /// # Safety
+    /// `settings` must be initialized and valid with a valid `JPC_SoftBodySharedSettings` pointer.
+    pub unsafe fn create_soft_body(&self, settings: &JPC_SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = JPC_BodyInterface_CreateSoftBody(self.raw, settings);
+        if raw.is_null() { None } else { Some(Body::new(raw)) }
+    }
+
+    /// Create a soft body with a specific ID (does not add it).
+    /// # Safety
+    /// `settings` must be initialized and valid.
+    pub unsafe fn create_soft_body_with_id(&self, body_id: BodyId, settings: &JPC_SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = JPC_BodyInterface_CreateSoftBodyWithID(self.raw, body_id.raw(), settings);
+        if raw.is_null() { None } else { Some(Body::new(raw)) }
+    }
+
+    /// Create, add, and activate a soft body in one call.
+    /// # Safety
+    /// `settings` must be initialized and valid.
+    pub unsafe fn create_and_add_soft_body(&self, settings: &JPC_SoftBodyCreationSettings, activation: JPC_Activation) -> BodyId {
+        BodyId::new(JPC_BodyInterface_CreateAndAddSoftBody(self.raw, settings, activation))
+    }
+
     pub fn raw(&self) -> *mut JPC_BodyInterface { self.raw }
 }

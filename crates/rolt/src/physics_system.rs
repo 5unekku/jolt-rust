@@ -6,7 +6,7 @@ use crate::{IntoJolt, IntoRolt};
 use crate::{
     BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl, ContactListenerImpl,
     NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
-    SimShapeFilterImpl, StateRecorder,
+    SimShapeFilterImpl, StateRecorder, VehicleConstraint,
 };
 
 /// The root of everything for a physics simulation.
@@ -210,6 +210,15 @@ impl PhysicsSystem {
             let raw = JPC_PhysicsSystem_GetNarrowPhaseQuery(self.raw);
             NarrowPhaseQuery::new(raw)
         }
+    }
+
+    /// Register a vehicle constraint as a step listener so it receives pre/post-physics callbacks.
+    pub fn add_step_listener(&mut self, vehicle: &VehicleConstraint) {
+        unsafe { JPC_PhysicsSystem_AddStepListener(self.raw, vehicle.raw()) }
+    }
+
+    pub fn remove_step_listener(&mut self, vehicle: &VehicleConstraint) {
+        unsafe { JPC_PhysicsSystem_RemoveStepListener(self.raw, vehicle.raw()) }
     }
 
     /// Serialize the physics state into `recorder`.
