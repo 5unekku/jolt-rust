@@ -1,6 +1,110 @@
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Quat, RVec3, Vec3};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, ObjectLayer, PhysicsSystem, Quat, RefConst, RVec3, Vec3};
+
+/// Settings for creating a [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html).
+///
+/// Owns the shape so the pointer inside the JPC struct is always valid.
+pub struct CharacterSettings {
+    pub(crate) raw: JPC_CharacterSettings,
+    _shape: Option<RefConst<JPC_Shape>>,
+}
+
+impl CharacterSettings {
+    pub fn new(shape: &RefConst<JPC_Shape>, layer: ObjectLayer) -> Self {
+        let mut this = Self { raw: Default::default(), _shape: Some(shape.clone()) };
+        this.raw.Shape = shape.get();
+        this.raw.Layer = layer.raw();
+        this
+    }
+    pub fn up(&self) -> Vec3 { Vec3::from_jolt(self.raw.Up) }
+    pub fn set_up(&mut self, v: Vec3) { self.raw.Up = v.into_jolt(); }
+    pub fn max_slope_angle(&self) -> f32 { self.raw.MaxSlopeAngle }
+    pub fn set_max_slope_angle(&mut self, v: f32) { self.raw.MaxSlopeAngle = v; }
+    pub fn enhanced_internal_edge_removal(&self) -> bool { self.raw.EnhancedInternalEdgeRemoval }
+    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) { self.raw.EnhancedInternalEdgeRemoval = v; }
+    pub fn layer(&self) -> ObjectLayer { ObjectLayer::new(self.raw.Layer) }
+    pub fn set_layer(&mut self, v: ObjectLayer) { self.raw.Layer = v.raw(); }
+    pub fn mass(&self) -> f32 { self.raw.Mass }
+    pub fn set_mass(&mut self, v: f32) { self.raw.Mass = v; }
+    pub fn friction(&self) -> f32 { self.raw.Friction }
+    pub fn set_friction(&mut self, v: f32) { self.raw.Friction = v; }
+    pub fn gravity_factor(&self) -> f32 { self.raw.GravityFactor }
+    pub fn set_gravity_factor(&mut self, v: f32) { self.raw.GravityFactor = v; }
+    pub fn allowed_dofs(&self) -> JPC_AllowedDOFs { self.raw.AllowedDOFs }
+    pub fn set_allowed_dofs(&mut self, v: JPC_AllowedDOFs) { self.raw.AllowedDOFs = v; }
+    pub fn set_shape(&mut self, shape: &RefConst<JPC_Shape>) {
+        self._shape = Some(shape.clone());
+        self.raw.Shape = shape.get();
+    }
+}
+
+impl Default for CharacterSettings {
+    fn default() -> Self { Self { raw: Default::default(), _shape: None } }
+}
+
+/// Settings for creating a [`CharacterVirtual`].
+///
+/// Owns both the primary shape and the optional inner body shape.
+pub struct CharacterVirtualSettings {
+    pub(crate) raw: JPC_CharacterVirtualSettings,
+    _shape: Option<RefConst<JPC_Shape>>,
+    _inner_body_shape: Option<RefConst<JPC_Shape>>,
+}
+
+impl CharacterVirtualSettings {
+    pub fn new(shape: &RefConst<JPC_Shape>) -> Self {
+        let mut this = Self { raw: Default::default(), _shape: Some(shape.clone()), _inner_body_shape: None };
+        this.raw.Shape = shape.get();
+        this
+    }
+    pub fn up(&self) -> Vec3 { Vec3::from_jolt(self.raw.Up) }
+    pub fn set_up(&mut self, v: Vec3) { self.raw.Up = v.into_jolt(); }
+    pub fn max_slope_angle(&self) -> f32 { self.raw.MaxSlopeAngle }
+    pub fn set_max_slope_angle(&mut self, v: f32) { self.raw.MaxSlopeAngle = v; }
+    pub fn enhanced_internal_edge_removal(&self) -> bool { self.raw.EnhancedInternalEdgeRemoval }
+    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) { self.raw.EnhancedInternalEdgeRemoval = v; }
+    pub fn mass(&self) -> f32 { self.raw.Mass }
+    pub fn set_mass(&mut self, v: f32) { self.raw.Mass = v; }
+    pub fn max_strength(&self) -> f32 { self.raw.MaxStrength }
+    pub fn set_max_strength(&mut self, v: f32) { self.raw.MaxStrength = v; }
+    pub fn shape_offset(&self) -> Vec3 { Vec3::from_jolt(self.raw.ShapeOffset) }
+    pub fn set_shape_offset(&mut self, v: Vec3) { self.raw.ShapeOffset = v.into_jolt(); }
+    pub fn back_face_mode(&self) -> JPC_BackFaceMode { self.raw.BackFaceMode }
+    pub fn set_back_face_mode(&mut self, v: JPC_BackFaceMode) { self.raw.BackFaceMode = v; }
+    pub fn predictive_contact_distance(&self) -> f32 { self.raw.PredictiveContactDistance }
+    pub fn set_predictive_contact_distance(&mut self, v: f32) { self.raw.PredictiveContactDistance = v; }
+    pub fn max_collision_iterations(&self) -> u32 { self.raw.MaxCollisionIterations }
+    pub fn set_max_collision_iterations(&mut self, v: u32) { self.raw.MaxCollisionIterations = v; }
+    pub fn max_constraint_iterations(&self) -> u32 { self.raw.MaxConstraintIterations }
+    pub fn set_max_constraint_iterations(&mut self, v: u32) { self.raw.MaxConstraintIterations = v; }
+    pub fn min_time_remaining(&self) -> f32 { self.raw.MinTimeRemaining }
+    pub fn set_min_time_remaining(&mut self, v: f32) { self.raw.MinTimeRemaining = v; }
+    pub fn collision_tolerance(&self) -> f32 { self.raw.CollisionTolerance }
+    pub fn set_collision_tolerance(&mut self, v: f32) { self.raw.CollisionTolerance = v; }
+    pub fn character_padding(&self) -> f32 { self.raw.CharacterPadding }
+    pub fn set_character_padding(&mut self, v: f32) { self.raw.CharacterPadding = v; }
+    pub fn max_num_hits(&self) -> u32 { self.raw.MaxNumHits }
+    pub fn set_max_num_hits(&mut self, v: u32) { self.raw.MaxNumHits = v; }
+    pub fn hit_reduction_cos_max_angle(&self) -> f32 { self.raw.HitReductionCosMaxAngle }
+    pub fn set_hit_reduction_cos_max_angle(&mut self, v: f32) { self.raw.HitReductionCosMaxAngle = v; }
+    pub fn penetration_recovery_speed(&self) -> f32 { self.raw.PenetrationRecoverySpeed }
+    pub fn set_penetration_recovery_speed(&mut self, v: f32) { self.raw.PenetrationRecoverySpeed = v; }
+    pub fn inner_body_layer(&self) -> ObjectLayer { ObjectLayer::new(self.raw.InnerBodyLayer) }
+    pub fn set_inner_body_layer(&mut self, v: ObjectLayer) { self.raw.InnerBodyLayer = v.raw(); }
+    pub fn set_shape(&mut self, shape: &RefConst<JPC_Shape>) {
+        self._shape = Some(shape.clone());
+        self.raw.Shape = shape.get();
+    }
+    pub fn set_inner_body_shape(&mut self, shape: &RefConst<JPC_Shape>) {
+        self._inner_body_shape = Some(shape.clone());
+        self.raw.InnerBodyShape = shape.get();
+    }
+}
+
+impl Default for CharacterVirtualSettings {
+    fn default() -> Self { Self { raw: Default::default(), _shape: None, _inner_body_shape: None } }
+}
 
 /// Settings for [`CharacterVirtual::extended_update`].
 ///
@@ -41,12 +145,8 @@ pub struct CharacterVirtual {
 }
 
 impl CharacterVirtual {
-    /// Create a new character virtual.
-    ///
-    /// # Safety
-    /// `physics_system` must be valid and outlive this character.
-    pub unsafe fn new(settings: &JPC_CharacterVirtualSettings, position: RVec3, rotation: Quat, user_data: u64, physics_system: *mut JPC_PhysicsSystem) -> Self {
-        let raw = JPC_CharacterVirtual_new(settings, position.into_jolt(), rotation.into_jolt(), user_data, physics_system);
+    pub fn new(settings: &CharacterVirtualSettings, position: RVec3, rotation: Quat, user_data: u64, physics_system: &PhysicsSystem) -> Self {
+        let raw = unsafe { JPC_CharacterVirtual_new(&settings.raw, position.into_jolt(), rotation.into_jolt(), user_data, physics_system.raw()) };
         Self { raw }
     }
 
