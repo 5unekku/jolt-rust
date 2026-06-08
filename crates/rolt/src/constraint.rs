@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::{Body, IntoRolt, Ref, Vec3};
+use crate::{Body, IntoJolt, IntoRolt, Mat4, Quat, Ref, Vec3};
 
 /// Base constraint wrapper.  Use [`Constraint::raw`] to pass to physics system.
 ///
@@ -32,6 +32,22 @@ impl FixedConstraint {
         }
     }
 
+    pub fn total_lambda_position(&self) -> Vec3 {
+        unsafe { JPC_FixedConstraint_GetTotalLambdaPosition((*self.0).cast::<JPC_FixedConstraint>()).into_rolt() }
+    }
+
+    pub fn total_lambda_rotation(&self) -> Vec3 {
+        unsafe { JPC_FixedConstraint_GetTotalLambdaRotation((*self.0).cast::<JPC_FixedConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
     pub fn raw(&self) -> *mut JPC_Constraint { *self.0 }
 }
@@ -55,6 +71,15 @@ impl DistanceConstraint {
 
     pub fn min_distance(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetMinDistance(*self.0) } }
     pub fn max_distance(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetMaxDistance(*self.0) } }
+    pub fn total_lambda_position(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetTotalLambdaPosition(*self.0) } }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
     pub fn raw(&self) -> *mut JPC_DistanceConstraint { *self.0 }
@@ -153,6 +178,117 @@ impl SixDofConstraint {
             let raw = JPC_SixDOFConstraintSettings_Create(settings, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
+    }
+
+    fn dof(&self) -> *mut JPC_SixDOFConstraint { (*self.0).cast::<JPC_SixDOFConstraint>() }
+    fn two_body(&self) -> *const JPC_TwoBodyConstraint { (*self.0).cast::<JPC_TwoBodyConstraint>() }
+
+    pub fn translation_limits_min(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTranslationLimitsMin(self.dof()).into_rolt() }
+    }
+
+    pub fn translation_limits_max(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTranslationLimitsMax(self.dof()).into_rolt() }
+    }
+
+    pub fn set_translation_limits(&self, min: Vec3, max: Vec3) {
+        unsafe { JPC_SixDOFConstraint_SetTranslationLimits(self.dof(), min.into_jolt(), max.into_jolt()) }
+    }
+
+    pub fn rotation_limits_min(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetRotationLimitsMin(self.dof()).into_rolt() }
+    }
+
+    pub fn rotation_limits_max(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetRotationLimitsMax(self.dof()).into_rolt() }
+    }
+
+    pub fn set_rotation_limits(&self, min: Vec3, max: Vec3) {
+        unsafe { JPC_SixDOFConstraint_SetRotationLimits(self.dof(), min.into_jolt(), max.into_jolt()) }
+    }
+
+    pub fn limits_min(&self, axis: JPC_SixDOFConstraint_Axis) -> f32 {
+        unsafe { JPC_SixDOFConstraint_GetLimitsMin(self.dof(), axis) }
+    }
+
+    pub fn limits_max(&self, axis: JPC_SixDOFConstraint_Axis) -> f32 {
+        unsafe { JPC_SixDOFConstraint_GetLimitsMax(self.dof(), axis) }
+    }
+
+    pub fn is_free_axis(&self, axis: JPC_SixDOFConstraint_Axis) -> bool {
+        unsafe { JPC_SixDOFConstraint_IsFreeAxis(self.dof(), axis) }
+    }
+
+    pub fn max_friction(&self, axis: JPC_SixDOFConstraint_Axis) -> f32 {
+        unsafe { JPC_SixDOFConstraint_GetMaxFriction(self.dof(), axis) }
+    }
+
+    pub fn set_max_friction(&self, axis: JPC_SixDOFConstraint_Axis, friction: f32) {
+        unsafe { JPC_SixDOFConstraint_SetMaxFriction(self.dof(), axis, friction) }
+    }
+
+    pub fn rotation_in_constraint_space(&self) -> Quat {
+        unsafe { JPC_SixDOFConstraint_GetRotationInConstraintSpace(self.dof()).into_rolt() }
+    }
+
+    pub fn target_velocity_cs(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTargetVelocityCS(self.dof()).into_rolt() }
+    }
+
+    pub fn set_target_velocity_cs(&self, velocity: Vec3) {
+        unsafe { JPC_SixDOFConstraint_SetTargetVelocityCS(self.dof(), velocity.into_jolt()) }
+    }
+
+    pub fn target_angular_velocity_cs(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTargetAngularVelocityCS(self.dof()).into_rolt() }
+    }
+
+    pub fn set_target_angular_velocity_cs(&self, velocity: Vec3) {
+        unsafe { JPC_SixDOFConstraint_SetTargetAngularVelocityCS(self.dof(), velocity.into_jolt()) }
+    }
+
+    pub fn target_position_cs(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTargetPositionCS(self.dof()).into_rolt() }
+    }
+
+    pub fn set_target_position_cs(&self, position: Vec3) {
+        unsafe { JPC_SixDOFConstraint_SetTargetPositionCS(self.dof(), position.into_jolt()) }
+    }
+
+    pub fn target_orientation_cs(&self) -> Quat {
+        unsafe { JPC_SixDOFConstraint_GetTargetOrientationCS(self.dof()).into_rolt() }
+    }
+
+    pub fn set_target_orientation_cs(&self, orientation: Quat) {
+        unsafe { JPC_SixDOFConstraint_SetTargetOrientationCS(self.dof(), orientation.into_jolt()) }
+    }
+
+    pub fn set_target_orientation_bs(&self, orientation: Quat) {
+        unsafe { JPC_SixDOFConstraint_SetTargetOrientationBS(self.dof(), orientation.into_jolt()) }
+    }
+
+    pub fn total_lambda_position(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTotalLambdaPosition(self.dof()).into_rolt() }
+    }
+
+    pub fn total_lambda_rotation(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTotalLambdaRotation(self.dof()).into_rolt() }
+    }
+
+    pub fn total_lambda_motor_translation(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTotalLambdaMotorTranslation(self.dof()).into_rolt() }
+    }
+
+    pub fn total_lambda_motor_rotation(&self) -> Vec3 {
+        unsafe { JPC_SixDOFConstraint_GetTotalLambdaMotorRotation(self.dof()).into_rolt() }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix(self.two_body()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix(self.two_body()).into_rolt() }
     }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
