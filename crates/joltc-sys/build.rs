@@ -104,6 +104,12 @@ fn build_joltc() {
         config.generator("Ninja");
     }
 
+    // slim linux containers (e.g. rust:slim-trixie) don't have make; force
+    // Ninja which is explicitly installed in our CI deps step.
+    if cfg!(target_os = "linux") {
+        config.generator("Ninja");
+    }
+
     // Having IPO/LTO turned on breaks lld on Windows.
     config.define("INTERPROCEDURAL_OPTIMIZATION", "OFF");
 
