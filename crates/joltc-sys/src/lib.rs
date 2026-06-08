@@ -41,4 +41,9 @@ ffi_default! {
     JPC_SubShapeSettings -> JPC_SubShapeSettings_default,
     JPC_StaticCompoundShapeSettings -> JPC_StaticCompoundShapeSettings_default,
     JPC_MutableCompoundShapeSettings -> JPC_MutableCompoundShapeSettings_default,
+
+    // Character settings
+    JPC_CharacterSettings -> JPC_CharacterSettings_default,
+    JPC_CharacterVirtualSettings -> JPC_CharacterVirtualSettings_default,
+    JPC_ExtendedUpdateSettings -> JPC_ExtendedUpdateSettings_default,
 }
