@@ -184,9 +184,7 @@ impl CharacterVirtual {
         unsafe { JPC_CharacterVirtual_UpdateGroundVelocity(self.raw) }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_CharacterVirtual) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_CharacterVirtual) -> R) -> R {
         f(self.raw)
     }
 

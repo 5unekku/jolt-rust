@@ -156,11 +156,9 @@ impl<T: RefTarget> RefConst<T> {
     /// Call `f` with the raw pointer, guaranteed alive for the duration of the call.
     ///
     /// Analogous to wgpu's `as_hal` — the refcount is held while `f` runs, so the
-    /// pointer is valid.  You still own all the usual JoltC safety obligations inside `f`.
-    ///
-    /// # Safety
-    /// Caller must not destroy the object or violate Jolt's threading rules inside `f`.
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*const T) -> R) -> R {
+    /// pointer is valid.  Any JoltC calls inside `f` that require an unsafe block still
+    /// need one there.
+    pub fn with_raw<R>(&self, f: impl FnOnce(*const T) -> R) -> R {
         f(self.ptr)
     }
 
@@ -236,11 +234,9 @@ impl<T: RefTarget> Ref<T> {
     /// Call `f` with the raw pointer, guaranteed alive for the duration of the call.
     ///
     /// Analogous to wgpu's `as_hal` — the refcount is held while `f` runs, so the
-    /// pointer is valid.  You still own all the usual JoltC safety obligations inside `f`.
-    ///
-    /// # Safety
-    /// Caller must not destroy the object or violate Jolt's threading rules inside `f`.
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut T) -> R) -> R {
+    /// pointer is valid.  Any JoltC calls inside `f` that require an unsafe block still
+    /// need one there.
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut T) -> R) -> R {
         f(self.ptr)
     }
 

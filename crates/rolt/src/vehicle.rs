@@ -45,9 +45,7 @@ impl VehicleConstraintSettings {
         VehicleConstraint { raw: vc }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleConstraintSettings) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleConstraintSettings) -> R) -> R {
         f(self.raw)
     }
 
@@ -92,9 +90,7 @@ impl WheeledVehicleControllerSettings {
         unsafe { JPC_WheeledVehicleControllerSettings_AddDifferential(self.raw, differential) }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*const JPC_WheeledVehicleControllerSettings) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*const JPC_WheeledVehicleControllerSettings) -> R) -> R {
         f(self.raw)
     }
 
@@ -152,9 +148,7 @@ impl VehicleCollisionTester {
         }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleCollisionTester) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleCollisionTester) -> R) -> R {
         f(self.raw)
     }
 
@@ -230,9 +224,7 @@ impl<'constraint> WheelWV<'constraint> {
     pub fn longitudinal_lambda(&self) -> f32 { unsafe { JPC_WheelWV_GetLongitudinalLambda(self.raw) } }
     pub fn lateral_lambda(&self) -> f32 { unsafe { JPC_WheelWV_GetLateralLambda(self.raw) } }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_WheelWV) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_WheelWV) -> R) -> R {
         f(self.raw)
     }
 }
@@ -276,9 +268,7 @@ impl<'constraint> WheeledVehicleController<'constraint> {
         unsafe { JPC_WheeledVehicleController_SetHandBrakeInput(self.raw, v) }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_WheeledVehicleController) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_WheeledVehicleController) -> R) -> R {
         f(self.raw)
     }
 }
@@ -345,9 +335,7 @@ impl VehicleConstraint {
         unsafe { JPC_VehicleConstraint_AsConstraint(self.raw) }
     }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleConstraint) -> R) -> R {
         f(self.raw)
     }
 

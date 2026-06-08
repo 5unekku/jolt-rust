@@ -15,9 +15,7 @@ impl Constraint {
     pub fn constraint_priority(&self) -> u32 { unsafe { JPC_Constraint_GetConstraintPriority(*self.0) } }
     pub fn set_constraint_priority(&self, priority: u32) { unsafe { JPC_Constraint_SetConstraintPriority(*self.0, priority) } }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -55,9 +53,7 @@ impl FixedConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -95,9 +91,7 @@ impl DistanceConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_DistanceConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_DistanceConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -133,9 +127,7 @@ impl HingeConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_HingeConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_HingeConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -171,9 +163,7 @@ impl SliderConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SliderConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SliderConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -198,9 +188,7 @@ impl PointConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PointConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PointConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -333,9 +321,7 @@ impl SixDofConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -357,9 +343,7 @@ impl SwingTwistConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SwingTwistConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SwingTwistConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -384,9 +368,7 @@ impl ConeConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_ConeConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_ConeConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -410,9 +392,7 @@ impl PulleyConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PulleyConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PulleyConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
@@ -438,9 +418,7 @@ impl PathConstraint {
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
-    /// # Safety
-    /// See [`Ref::with_raw`].
-    pub unsafe fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PathConstraint) -> R) -> R {
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PathConstraint) -> R) -> R {
         self.0.with_raw(f)
     }
 
