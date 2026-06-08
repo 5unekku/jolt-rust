@@ -17,11 +17,22 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         rust_version: [stable]
         build_flags: ["", "--features double-precision", "--features object-layer-u32", "--all-features"]
+        include:
+          - os: ubuntu-latest
+            container: rust:slim-trixie
 
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || '' }}
     name: Tests - ${{ matrix.os }} ${{ matrix.rust_version }} ${{ matrix.build_flags }}
 
     steps:
+    - name: Install C/C++ build deps
+      if: runner.os == 'Linux'
+      run: |
+        apt-get update -qq
+        apt-get install -y --no-install-recommends \
+          git cmake ninja-build clang libclang-dev
+
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
@@ -34,14 +45,17 @@ jobs:
     - uses: swatinem/rust-cache@v2
 
     - name: Rust Tests
-      run: |
-        cargo test --verbose --workspace ${{ matrix.build_flags }}
+      run: cargo test --verbose --workspace ${{ matrix.build_flags }}
 
   rustfmt:
     runs-on: ubuntu-latest
+    container: rust:slim-trixie
     name: Code Formatting
 
     steps:
+    - name: Install git
+      run: apt-get update -qq && apt-get install -y --no-install-recommends git
+
     - uses: actions/checkout@v4
 
     - name: Install Rust
@@ -51,5 +65,4 @@ jobs:
         components: rustfmt
 
     - name: Rustfmt
-      run: |
-        cargo fmt --all --check
+      run: cargo fmt --all --check
