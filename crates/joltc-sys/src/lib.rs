@@ -46,4 +46,30 @@ ffi_default! {
     JPC_CharacterSettings -> JPC_CharacterSettings_default,
     JPC_CharacterVirtualSettings -> JPC_CharacterVirtualSettings_default,
     JPC_ExtendedUpdateSettings -> JPC_ExtendedUpdateSettings_default,
+
+    // new shape settings
+    JPC_HeightFieldShapeSettings -> JPC_HeightFieldShapeSettings_default,
+    JPC_ScaledShapeSettings -> JPC_ScaledShapeSettings_default,
+    JPC_RotatedTranslatedShapeSettings -> JPC_RotatedTranslatedShapeSettings_default,
+    JPC_OffsetCenterOfMassShapeSettings -> JPC_OffsetCenterOfMassShapeSettings_default,
+    JPC_TaperedCapsuleShapeSettings -> JPC_TaperedCapsuleShapeSettings_default,
+    JPC_TaperedCylinderShapeSettings -> JPC_TaperedCylinderShapeSettings_default,
+    JPC_EmptyShapeSettings -> JPC_EmptyShapeSettings_default,
+
+    // new constraint settings
+    JPC_PointConstraintSettings -> JPC_PointConstraintSettings_default,
+    JPC_ConeConstraintSettings -> JPC_ConeConstraintSettings_default,
+    JPC_PulleyConstraintSettings -> JPC_PulleyConstraintSettings_default,
+    JPC_GearConstraintSettings -> JPC_GearConstraintSettings_default,
+    JPC_RackAndPinionConstraintSettings -> JPC_RackAndPinionConstraintSettings_default,
+    JPC_SwingTwistConstraintSettings -> JPC_SwingTwistConstraintSettings_default,
+    JPC_PathConstraintSettings -> JPC_PathConstraintSettings_default,
+
+    // vehicle
+    JPC_VehicleEngineSettings -> JPC_VehicleEngineSettings_default,
+    JPC_VehicleTransmissionSettings -> JPC_VehicleTransmissionSettings_default,
+    JPC_VehicleDifferentialSettings -> JPC_VehicleDifferentialSettings_default,
+
+    // soft body
+    JPC_SoftBodyCreationSettings -> JPC_SoftBodyCreationSettings_default,
 }
