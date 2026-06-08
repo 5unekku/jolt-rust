@@ -104,9 +104,10 @@ fn build_joltc() {
         config.generator("Ninja");
     }
 
-    // slim linux containers (e.g. rust:slim-trixie) don't have make; force
-    // Ninja which is explicitly installed in our CI deps step.
-    if cfg!(target_os = "linux") {
+    // prefer ninja over make on unix — faster and more predictable.
+    // slim containers may not have make at all, but ninja is always available
+    // or explicitly installed.
+    if cfg!(unix) {
         config.generator("Ninja");
     }
 
