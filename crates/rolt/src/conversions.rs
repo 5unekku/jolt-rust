@@ -5,7 +5,7 @@ pub trait FromJolt {
     fn from_jolt(value: Self::Jolt) -> Self;
 }
 
-/// Trait for converting a value into its corresponding [`joltc-sys`] type.
+/// Trait for converting a value into its corresponding [`joltc_sys`] type.
 pub trait IntoJolt {
     type Jolt;
 

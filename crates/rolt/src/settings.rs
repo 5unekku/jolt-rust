@@ -190,7 +190,7 @@ pub fn default_physics_material() -> RefConst<JPC_PhysicsMaterial> {
 
 // --- debug draw ---
 
-/// Controls what is drawn by [`PhysicsSystem::draw_bodies`].
+/// Controls what is drawn by `PhysicsSystem::draw_bodies`.
 ///
 /// See also: Jolt's [`BodyManager::DrawSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body_manager.html).
 #[repr(transparent)]
