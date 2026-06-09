@@ -120,6 +120,7 @@ impl Default for CollisionGroup {
 ///
 /// See also: Jolt's [`SoftBodyCreationSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_soft_body_creation_settings.html) class.
 #[repr(transparent)]
+#[derive(Default)]
 pub struct SoftBodyCreationSettings(pub JPC_SoftBodyCreationSettings);
 
 impl SoftBodyCreationSettings {
@@ -225,18 +226,13 @@ impl SoftBodyCreationSettings {
     }
 }
 
-impl Default for SoftBodyCreationSettings {
-    fn default() -> Self {
-        Self(JPC_SoftBodyCreationSettings::default())
-    }
-}
-
 // --- query settings ---
 
 /// Settings for shape-cast queries.
 ///
 /// See also: Jolt's [`ShapeCastSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_shape_cast_settings.html) struct.
 #[repr(transparent)]
+#[derive(Default)]
 pub struct ShapeCastSettings(pub JPC_ShapeCastSettings);
 
 impl ShapeCastSettings {
@@ -296,16 +292,11 @@ impl ShapeCastSettings {
     }
 }
 
-impl Default for ShapeCastSettings {
-    fn default() -> Self {
-        Self(JPC_ShapeCastSettings::default())
-    }
-}
-
 /// Settings for collide-shape queries.
 ///
 /// See also: Jolt's [`CollideShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_collide_shape_settings.html) struct.
 #[repr(transparent)]
+#[derive(Default)]
 pub struct CollideShapeSettings(pub JPC_CollideShapeSettings);
 
 impl CollideShapeSettings {
@@ -350,12 +341,6 @@ impl CollideShapeSettings {
     }
     pub fn set_back_face_mode(&mut self, v: JPC_BackFaceMode) {
         self.0.BackFaceMode = v;
-    }
-}
-
-impl Default for CollideShapeSettings {
-    fn default() -> Self {
-        Self(JPC_CollideShapeSettings::default())
     }
 }
 

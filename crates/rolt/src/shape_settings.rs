@@ -7,6 +7,7 @@ use crate::{
 // --- simple shape settings (all fields directly accessible) ---
 
 /// See also: Jolt's [`BoxShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_box_shape_settings.html) class.
+#[derive(Default)]
 pub struct BoxShapeSettings {
     raw: JPC_BoxShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -57,16 +58,9 @@ impl BoxShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_BoxShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for BoxShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`SphereShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_sphere_shape_settings.html) class.
+#[derive(Default)]
 pub struct SphereShapeSettings {
     raw: JPC_SphereShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -110,16 +104,9 @@ impl SphereShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_SphereShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for SphereShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`CapsuleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_capsule_shape_settings.html) class.
+#[derive(Default)]
 pub struct CapsuleShapeSettings {
     raw: JPC_CapsuleShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -170,16 +157,9 @@ impl CapsuleShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_CapsuleShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for CapsuleShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`CylinderShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_cylinder_shape_settings.html) class.
+#[derive(Default)]
 pub struct CylinderShapeSettings {
     raw: JPC_CylinderShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -237,16 +217,9 @@ impl CylinderShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_CylinderShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for CylinderShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`TriangleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_triangle_shape_settings.html) class.
+#[derive(Default)]
 pub struct TriangleShapeSettings {
     raw: JPC_TriangleShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -311,16 +284,9 @@ impl TriangleShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_TriangleShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for TriangleShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`PlaneShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_plane_shape_settings.html) class.
+#[derive(Default)]
 pub struct PlaneShapeSettings {
     raw: JPC_PlaneShapeSettings,
     material: Option<RefConst<JPC_PhysicsMaterial>>,
@@ -372,16 +338,9 @@ impl PlaneShapeSettings {
         create_shape_inner(|s, e| unsafe { JPC_PlaneShapeSettings_Create(&self.raw, s, e) })
     }
 }
-impl Default for PlaneShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            material: None,
-        }
-    }
-}
 
 /// See also: Jolt's [`TaperedCapsuleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_tapered_capsule_shape_settings.html) class.
+#[derive(Default)]
 pub struct TaperedCapsuleShapeSettings {
     raw: JPC_TaperedCapsuleShapeSettings,
 }
@@ -432,15 +391,9 @@ impl TaperedCapsuleShapeSettings {
         })
     }
 }
-impl Default for TaperedCapsuleShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-        }
-    }
-}
 
 /// See also: Jolt's [`TaperedCylinderShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_tapered_cylinder_shape_settings.html) class.
+#[derive(Default)]
 pub struct TaperedCylinderShapeSettings {
     raw: JPC_TaperedCylinderShapeSettings,
 }
@@ -498,15 +451,9 @@ impl TaperedCylinderShapeSettings {
         })
     }
 }
-impl Default for TaperedCylinderShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-        }
-    }
-}
 
 /// See also: Jolt's [`EmptyShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_empty_shape_settings.html) class.
+#[derive(Default)]
 pub struct EmptyShapeSettings {
     raw: JPC_EmptyShapeSettings,
 }
@@ -533,13 +480,6 @@ impl EmptyShapeSettings {
     }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_EmptyShapeSettings_Create(&self.raw, s, e) })
-    }
-}
-impl Default for EmptyShapeSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-        }
     }
 }
 

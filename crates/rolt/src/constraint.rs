@@ -366,8 +366,8 @@ impl SixDofConstraintSettings {
         unsafe { &*(&self.0.LimitsSpringSettings as *const _ as *const [SpringSettings; 3]) }
     }
     pub fn set_limits_spring_settings(&mut self, v: [SpringSettings; 3]) {
-        for i in 0..3 {
-            self.0.LimitsSpringSettings[i] = v[i].0;
+        for (i, s) in v.into_iter().enumerate() {
+            self.0.LimitsSpringSettings[i] = s.0;
         }
     }
 }

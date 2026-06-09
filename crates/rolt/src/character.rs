@@ -189,6 +189,7 @@ impl Drop for Character {
 /// Settings for creating a [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html).
 ///
 /// Owns the shape so the pointer inside the JPC struct is always valid.
+#[derive(Default)]
 pub struct CharacterSettings {
     pub(crate) raw: JPC_CharacterSettings,
     _shape: Option<RefConst<JPC_Shape>>,
@@ -258,18 +259,10 @@ impl CharacterSettings {
     }
 }
 
-impl Default for CharacterSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            _shape: None,
-        }
-    }
-}
-
 /// Settings for creating a [`CharacterVirtual`].
 ///
 /// Owns both the primary shape and the optional inner body shape.
+#[derive(Default)]
 pub struct CharacterVirtualSettings {
     pub(crate) raw: JPC_CharacterVirtualSettings,
     _shape: Option<RefConst<JPC_Shape>>,
@@ -395,16 +388,6 @@ impl CharacterVirtualSettings {
     pub fn set_inner_body_shape(&mut self, shape: &RefConst<JPC_Shape>) {
         self._inner_body_shape = Some(shape.clone());
         self.raw.InnerBodyShape = shape.get();
-    }
-}
-
-impl Default for CharacterVirtualSettings {
-    fn default() -> Self {
-        Self {
-            raw: Default::default(),
-            _shape: None,
-            _inner_body_shape: None,
-        }
     }
 }
 

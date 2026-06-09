@@ -114,6 +114,7 @@ impl Drop for WheelSettingsWV {
 
 /// See also: Jolt's [`VehicleEngineSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_engine_settings.html) struct.
 #[repr(transparent)]
+#[derive(Default)]
 pub struct VehicleEngineSettings(pub JPC_VehicleEngineSettings);
 
 impl VehicleEngineSettings {
@@ -149,13 +150,8 @@ impl VehicleEngineSettings {
     }
 }
 
-impl Default for VehicleEngineSettings {
-    fn default() -> Self {
-        Self(JPC_VehicleEngineSettings::default())
-    }
-}
-
 /// See also: Jolt's [`VehicleTransmissionSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_transmission_settings.html) struct.
+#[derive(Default)]
 pub struct VehicleTransmissionSettings(pub JPC_VehicleTransmissionSettings);
 
 impl VehicleTransmissionSettings {
@@ -219,14 +215,9 @@ impl VehicleTransmissionSettings {
     }
 }
 
-impl Default for VehicleTransmissionSettings {
-    fn default() -> Self {
-        Self(JPC_VehicleTransmissionSettings::default())
-    }
-}
-
 /// See also: Jolt's [`VehicleDifferentialSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_differential_settings.html) struct.
 #[repr(transparent)]
+#[derive(Default)]
 pub struct VehicleDifferentialSettings(pub JPC_VehicleDifferentialSettings);
 
 impl VehicleDifferentialSettings {
@@ -265,12 +256,6 @@ impl VehicleDifferentialSettings {
     }
     pub fn set_engine_torque_ratio(&mut self, v: f32) {
         self.0.EngineTorqueRatio = v;
-    }
-}
-
-impl Default for VehicleDifferentialSettings {
-    fn default() -> Self {
-        Self(JPC_VehicleDifferentialSettings::default())
     }
 }
 

@@ -47,6 +47,10 @@ macro_rules! define_impl_struct {
                     }
                 }
 
+                /// # Safety
+                ///
+                /// `this` must be a valid pointer for the lifetime of the returned value, and
+                /// `fns` must be function pointers whose implementations are compatible with `this`.
                 pub unsafe fn from_raw(this: *$mutability c_void, fns: [<JPC_ $base_name Fns>]) -> Self {
                     let raw = unsafe { [<JPC_ $base_name _new>](this, fns) };
 
@@ -57,6 +61,10 @@ macro_rules! define_impl_struct {
                     }
                 }
 
+                /// # Safety
+                ///
+                /// `raw` must be a valid, non-null pointer to a JPC object whose lifetime
+                /// outlasts the returned value.
                 pub unsafe fn new_existing(raw: *mut [<JPC_ $base_name>]) -> Self {
                     Self {
                         raw,

@@ -686,7 +686,6 @@ impl<'physics_system> BodyInterface<'physics_system> {
     /// destroy a body that never had an ID assigned.
     pub fn destroy_body_without_id(&self, body: Body<'_>) {
         unsafe { JPC_BodyInterface_DestroyBodyWithoutID(self.raw, body.raw()) }
-        std::mem::forget(body);
     }
 
     /// Assign the next available ID to a body that has none. Returns `true` on success.
