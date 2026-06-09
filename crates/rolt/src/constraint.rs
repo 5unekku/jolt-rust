@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::{Body, FromJolt, IntoJolt, IntoRolt, Mat4, MotorSettings, Quat, Ref, RVec3, SpringSettings, Vec3};
+use crate::{Body, FromJolt, IntoJolt, IntoRolt, Mat4, MotorSettings, Quat, Ref, RefConst, RVec3, SpringSettings, Vec3};
 
 // --- constraint settings ---
 
@@ -296,9 +296,10 @@ impl Default for SwingTwistConstraintSettings {
 pub struct PathConstraintSettings(pub JPC_PathConstraintSettings);
 
 impl PathConstraintSettings {
-    /// Raw pointer to the path object.  Must outlive this settings object.
     pub fn path(&self) -> *mut JPC_PathConstraintPath { self.0.Path }
-    pub fn set_path(&mut self, path: *mut JPC_PathConstraintPath) { self.0.Path = path; }
+    pub fn set_path(&mut self, path: Option<&Ref<JPC_PathConstraintPath>>) {
+        self.0.Path = path.map_or(std::ptr::null_mut(), |r| r.get());
+    }
     pub fn path_position(&self) -> Vec3 { Vec3::from_jolt(self.0.PathPosition) }
     pub fn set_path_position(&mut self, v: Vec3) { self.0.PathPosition = v.into_jolt(); }
     pub fn path_rotation(&self) -> Quat { Quat::from_jolt(self.0.PathRotation) }
@@ -362,6 +363,14 @@ impl FixedConstraint {
         unsafe { JPC_FixedConstraint_GetTotalLambdaRotation((*self.0).cast::<JPC_FixedConstraint>()).into_rolt() }
     }
 
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
     pub fn constraint_to_body1_matrix(&self) -> Mat4 {
         unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
     }
@@ -399,6 +408,16 @@ impl DistanceConstraint {
     pub fn min_distance(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetMinDistance(*self.0) } }
     pub fn max_distance(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetMaxDistance(*self.0) } }
     pub fn total_lambda_position(&self) -> f32 { unsafe { JPC_DistanceConstraint_GetTotalLambdaPosition(*self.0) } }
+    pub fn limits_spring_settings(&self) -> SpringSettings { unsafe { SpringSettings(JPC_DistanceConstraint_GetLimitsSpringSettings(*self.0)) } }
+    pub fn set_limits_spring_settings(&self, settings: &SpringSettings) { unsafe { JPC_DistanceConstraint_SetLimitsSpringSettings(*self.0, &settings.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
 
     pub fn constraint_to_body1_matrix(&self) -> Mat4 {
         unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
@@ -443,6 +462,40 @@ impl HingeConstraint {
     pub fn has_limits(&self) -> bool { unsafe { JPC_HingeConstraint_HasLimits(*self.0) } }
     pub fn max_friction_torque(&self) -> f32 { unsafe { JPC_HingeConstraint_GetMaxFrictionTorque(*self.0) } }
     pub fn set_max_friction_torque(&self, torque: f32) { unsafe { JPC_HingeConstraint_SetMaxFrictionTorque(*self.0, torque) } }
+    pub fn total_lambda_position(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetTotalLambdaPosition(*self.0).into_rolt() } }
+    pub fn total_lambda_rotation(&self) -> [f32; 2] {
+        let v = unsafe { JPC_HingeConstraint_GetTotalLambdaRotation(*self.0) };
+        [v.x, v.y]
+    }
+    pub fn total_lambda_rotation_limits(&self) -> f32 { unsafe { JPC_HingeConstraint_GetTotalLambdaRotationLimits(*self.0) } }
+    pub fn total_lambda_motor(&self) -> f32 { unsafe { JPC_HingeConstraint_GetTotalLambdaMotor(*self.0) } }
+    pub fn local_space_point1(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpacePoint1(*self.0).into_rolt() } }
+    pub fn local_space_point2(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpacePoint2(*self.0).into_rolt() } }
+    pub fn local_space_hinge_axis1(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpaceHingeAxis1(*self.0).into_rolt() } }
+    pub fn local_space_hinge_axis2(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpaceHingeAxis2(*self.0).into_rolt() } }
+    pub fn local_space_normal_axis1(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpaceNormalAxis1(*self.0).into_rolt() } }
+    pub fn local_space_normal_axis2(&self) -> Vec3 { unsafe { JPC_HingeConstraint_GetLocalSpaceNormalAxis2(*self.0).into_rolt() } }
+    pub fn motor_settings(&self) -> MotorSettings { unsafe { MotorSettings(JPC_HingeConstraint_GetMotorSettings(*self.0)) } }
+    pub fn set_motor_settings(&self, settings: &MotorSettings) { unsafe { JPC_HingeConstraint_SetMotorSettings(*self.0, &settings.0) } }
+    pub fn set_target_orientation_bs(&self, orientation: Quat) { unsafe { JPC_HingeConstraint_SetTargetOrientationBS(*self.0, orientation.into_jolt()) } }
+    pub fn limits_spring_settings(&self) -> SpringSettings { unsafe { SpringSettings(JPC_HingeConstraint_GetLimitsSpringSettings(*self.0)) } }
+    pub fn set_limits_spring_settings(&self, settings: &SpringSettings) { unsafe { JPC_HingeConstraint_SetLimitsSpringSettings(*self.0, &settings.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -479,6 +532,33 @@ impl SliderConstraint {
     pub fn has_limits(&self) -> bool { unsafe { JPC_SliderConstraint_HasLimits(*self.0) } }
     pub fn max_friction_force(&self) -> f32 { unsafe { JPC_SliderConstraint_GetMaxFrictionForce(*self.0) } }
     pub fn set_max_friction_force(&self, force: f32) { unsafe { JPC_SliderConstraint_SetMaxFrictionForce(*self.0, force) } }
+    pub fn total_lambda_position(&self) -> [f32; 2] {
+        let v = unsafe { JPC_SliderConstraint_GetTotalLambdaPosition(*self.0) };
+        [v.x, v.y]
+    }
+    pub fn total_lambda_position_limits(&self) -> f32 { unsafe { JPC_SliderConstraint_GetTotalLambdaPositionLimits(*self.0) } }
+    pub fn total_lambda_rotation(&self) -> Vec3 { unsafe { JPC_SliderConstraint_GetTotalLambdaRotation(*self.0).into_rolt() } }
+    pub fn total_lambda_motor(&self) -> f32 { unsafe { JPC_SliderConstraint_GetTotalLambdaMotor(*self.0) } }
+    pub fn motor_settings(&self) -> MotorSettings { unsafe { MotorSettings(JPC_SliderConstraint_GetMotorSettings(*self.0)) } }
+    pub fn set_motor_settings(&self, settings: &MotorSettings) { unsafe { JPC_SliderConstraint_SetMotorSettings(*self.0, &settings.0) } }
+    pub fn limits_spring_settings(&self) -> SpringSettings { unsafe { SpringSettings(JPC_SliderConstraint_GetLimitsSpringSettings(*self.0)) } }
+    pub fn set_limits_spring_settings(&self, settings: &SpringSettings) { unsafe { JPC_SliderConstraint_SetLimitsSpringSettings(*self.0, &settings.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -504,6 +584,25 @@ impl PointConstraint {
 
     pub fn local_space_point1(&self) -> Vec3 { unsafe { JPC_PointConstraint_GetLocalSpacePoint1(*self.0).into_rolt() } }
     pub fn local_space_point2(&self) -> Vec3 { unsafe { JPC_PointConstraint_GetLocalSpacePoint2(*self.0).into_rolt() } }
+    pub fn set_point1(&self, space: JPC_ConstraintSpace, point: RVec3) { unsafe { JPC_PointConstraint_SetPoint1(*self.0, space, point.into_jolt()) } }
+    pub fn set_point2(&self, space: JPC_ConstraintSpace, point: RVec3) { unsafe { JPC_PointConstraint_SetPoint2(*self.0, space, point.into_jolt()) } }
+    pub fn total_lambda_position(&self) -> Vec3 { unsafe { JPC_PointConstraint_GetTotalLambdaPosition(*self.0).into_rolt() } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -630,6 +729,42 @@ impl SixDofConstraint {
         unsafe { JPC_SixDOFConstraint_GetTotalLambdaMotorRotation(self.dof()).into_rolt() }
     }
 
+    pub fn is_fixed_axis(&self, axis: JPC_SixDOFConstraint_Axis) -> bool {
+        unsafe { JPC_SixDOFConstraint_IsFixedAxis(self.dof(), axis) }
+    }
+
+    pub fn limits_spring_settings(&self, axis: JPC_SixDOFConstraint_Axis) -> SpringSettings {
+        unsafe { SpringSettings(JPC_SixDOFConstraint_GetLimitsSpringSettings(self.dof(), axis)) }
+    }
+
+    pub fn set_limits_spring_settings(&self, axis: JPC_SixDOFConstraint_Axis, settings: &SpringSettings) {
+        unsafe { JPC_SixDOFConstraint_SetLimitsSpringSettings(self.dof(), axis, &settings.0) }
+    }
+
+    pub fn motor_settings(&self, axis: JPC_SixDOFConstraint_Axis) -> MotorSettings {
+        unsafe { MotorSettings(JPC_SixDOFConstraint_GetMotorSettings(self.dof(), axis)) }
+    }
+
+    pub fn set_motor_settings(&self, axis: JPC_SixDOFConstraint_Axis, settings: &MotorSettings) {
+        unsafe { JPC_SixDOFConstraint_SetMotorSettings(self.dof(), axis, &settings.0) }
+    }
+
+    pub fn motor_state(&self, axis: JPC_SixDOFConstraint_Axis) -> JPC_MotorState {
+        unsafe { JPC_SixDOFConstraint_GetMotorState(self.dof(), axis) }
+    }
+
+    pub fn set_motor_state(&self, axis: JPC_SixDOFConstraint_Axis, state: JPC_MotorState) {
+        unsafe { JPC_SixDOFConstraint_SetMotorState(self.dof(), axis, state) }
+    }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1(self.two_body())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2(self.two_body())) }
+    }
+
     pub fn constraint_to_body1_matrix(&self) -> Mat4 {
         unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix(self.two_body()).into_rolt() }
     }
@@ -660,6 +795,56 @@ impl SwingTwistConstraint {
         }
     }
 
+    pub fn normal_half_cone_angle(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetNormalHalfConeAngle(*self.0) } }
+    pub fn set_normal_half_cone_angle(&self, angle: f32) { unsafe { JPC_SwingTwistConstraint_SetNormalHalfConeAngle(*self.0, angle) } }
+    pub fn plane_half_cone_angle(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetPlaneHalfConeAngle(*self.0) } }
+    pub fn set_plane_half_cone_angle(&self, angle: f32) { unsafe { JPC_SwingTwistConstraint_SetPlaneHalfConeAngle(*self.0, angle) } }
+    pub fn twist_min_angle(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetTwistMinAngle(*self.0) } }
+    pub fn set_twist_min_angle(&self, angle: f32) { unsafe { JPC_SwingTwistConstraint_SetTwistMinAngle(*self.0, angle) } }
+    pub fn twist_max_angle(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetTwistMaxAngle(*self.0) } }
+    pub fn set_twist_max_angle(&self, angle: f32) { unsafe { JPC_SwingTwistConstraint_SetTwistMaxAngle(*self.0, angle) } }
+    pub fn max_friction_torque(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetMaxFrictionTorque(*self.0) } }
+    pub fn set_max_friction_torque(&self, torque: f32) { unsafe { JPC_SwingTwistConstraint_SetMaxFrictionTorque(*self.0, torque) } }
+    pub fn swing_motor_state(&self) -> JPC_MotorState { unsafe { JPC_SwingTwistConstraint_GetSwingMotorState(*self.0) } }
+    pub fn set_swing_motor_state(&self, state: JPC_MotorState) { unsafe { JPC_SwingTwistConstraint_SetSwingMotorState(*self.0, state) } }
+    pub fn twist_motor_state(&self) -> JPC_MotorState { unsafe { JPC_SwingTwistConstraint_GetTwistMotorState(*self.0) } }
+    pub fn set_twist_motor_state(&self, state: JPC_MotorState) { unsafe { JPC_SwingTwistConstraint_SetTwistMotorState(*self.0, state) } }
+    pub fn target_angular_velocity_cs(&self) -> Vec3 { unsafe { JPC_SwingTwistConstraint_GetTargetAngularVelocityCS(*self.0).into_rolt() } }
+    pub fn set_target_angular_velocity_cs(&self, velocity: Vec3) { unsafe { JPC_SwingTwistConstraint_SetTargetAngularVelocityCS(*self.0, velocity.into_jolt()) } }
+    pub fn target_orientation_cs(&self) -> Quat { unsafe { JPC_SwingTwistConstraint_GetTargetOrientationCS(*self.0).into_rolt() } }
+    pub fn set_target_orientation_cs(&self, orientation: Quat) { unsafe { JPC_SwingTwistConstraint_SetTargetOrientationCS(*self.0, orientation.into_jolt()) } }
+    pub fn set_target_orientation_bs(&self, orientation: Quat) { unsafe { JPC_SwingTwistConstraint_SetTargetOrientationBS(*self.0, orientation.into_jolt()) } }
+    pub fn rotation_in_constraint_space(&self) -> Quat { unsafe { JPC_SwingTwistConstraint_GetRotationInConstraintSpace(*self.0).into_rolt() } }
+    pub fn total_lambda_position(&self) -> Vec3 { unsafe { JPC_SwingTwistConstraint_GetTotalLambdaPosition(*self.0).into_rolt() } }
+    pub fn total_lambda_twist(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetTotalLambdaTwist(*self.0) } }
+    pub fn total_lambda_swing_y(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetTotalLambdaSwingY(*self.0) } }
+    pub fn total_lambda_swing_z(&self) -> f32 { unsafe { JPC_SwingTwistConstraint_GetTotalLambdaSwingZ(*self.0) } }
+    pub fn total_lambda_motor(&self) -> Vec3 { unsafe { JPC_SwingTwistConstraint_GetTotalLambdaMotor(*self.0).into_rolt() } }
+    pub fn local_space_position1(&self) -> Vec3 { unsafe { JPC_SwingTwistConstraint_GetLocalSpacePosition1(*self.0).into_rolt() } }
+    pub fn local_space_position2(&self) -> Vec3 { unsafe { JPC_SwingTwistConstraint_GetLocalSpacePosition2(*self.0).into_rolt() } }
+    pub fn constraint_to_body1(&self) -> Quat { unsafe { JPC_SwingTwistConstraint_GetConstraintToBody1(*self.0).into_rolt() } }
+    pub fn constraint_to_body2(&self) -> Quat { unsafe { JPC_SwingTwistConstraint_GetConstraintToBody2(*self.0).into_rolt() } }
+    pub fn swing_motor_settings(&self) -> MotorSettings { unsafe { MotorSettings(JPC_SwingTwistConstraint_GetSwingMotorSettings(*self.0)) } }
+    pub fn set_swing_motor_settings(&self, settings: &MotorSettings) { unsafe { JPC_SwingTwistConstraint_SetSwingMotorSettings(*self.0, &settings.0) } }
+    pub fn twist_motor_settings(&self) -> MotorSettings { unsafe { MotorSettings(JPC_SwingTwistConstraint_GetTwistMotorSettings(*self.0)) } }
+    pub fn set_twist_motor_settings(&self, settings: &MotorSettings) { unsafe { JPC_SwingTwistConstraint_SetTwistMotorSettings(*self.0, &settings.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_SwingTwistConstraint) -> R) -> R {
@@ -684,6 +869,24 @@ impl ConeConstraint {
 
     pub fn set_half_cone_angle(&self, angle: f32) { unsafe { JPC_ConeConstraint_SetHalfConeAngle(*self.0, angle) } }
     pub fn cos_half_cone_angle(&self) -> f32 { unsafe { JPC_ConeConstraint_GetCosHalfConeAngle(*self.0) } }
+    pub fn total_lambda_position(&self) -> Vec3 { unsafe { JPC_ConeConstraint_GetTotalLambdaPosition(*self.0).into_rolt() } }
+    pub fn total_lambda_rotation(&self) -> f32 { unsafe { JPC_ConeConstraint_GetTotalLambdaRotation(*self.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -707,7 +910,27 @@ impl PulleyConstraint {
         }
     }
 
+    pub fn set_length(&self, min_length: f32, max_length: f32) { unsafe { JPC_PulleyConstraint_SetLength(*self.0, min_length, max_length) } }
+    pub fn min_length(&self) -> f32 { unsafe { JPC_PulleyConstraint_GetMinLength(*self.0) } }
+    pub fn max_length(&self) -> f32 { unsafe { JPC_PulleyConstraint_GetMaxLength(*self.0) } }
     pub fn current_length(&self) -> f32 { unsafe { JPC_PulleyConstraint_GetCurrentLength(*self.0) } }
+    pub fn total_lambda_position(&self) -> f32 { unsafe { JPC_PulleyConstraint_GetTotalLambdaPosition(*self.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -731,9 +954,53 @@ impl PathConstraint {
         }
     }
 
+    pub fn set_path(&self, path: &PathConstraintPath, path_fraction: f32) {
+        unsafe { JPC_PathConstraint_SetPath(*self.0, path.0.get().cast_mut(), path_fraction) }
+    }
+
+    pub fn get_path(&self) -> Option<PathConstraintPath> {
+        let raw = unsafe { JPC_PathConstraint_GetPath(*self.0) };
+        if raw.is_null() {
+            None
+        } else {
+            Some(PathConstraintPath(unsafe { RefConst::from_active(raw) }))
+        }
+    }
+
     pub fn path_fraction(&self) -> f32 { unsafe { JPC_PathConstraint_GetPathFraction(*self.0) } }
     pub fn max_friction_force(&self) -> f32 { unsafe { JPC_PathConstraint_GetMaxFrictionForce(*self.0) } }
     pub fn set_max_friction_force(&self, force: f32) { unsafe { JPC_PathConstraint_SetMaxFrictionForce(*self.0, force) } }
+    pub fn position_motor_state(&self) -> JPC_MotorState { unsafe { JPC_PathConstraint_GetPositionMotorState(*self.0) } }
+    pub fn set_position_motor_state(&self, state: JPC_MotorState) { unsafe { JPC_PathConstraint_SetPositionMotorState(*self.0, state) } }
+    pub fn target_velocity(&self) -> f32 { unsafe { JPC_PathConstraint_GetTargetVelocity(*self.0) } }
+    pub fn set_target_velocity(&self, velocity: f32) { unsafe { JPC_PathConstraint_SetTargetVelocity(*self.0, velocity) } }
+    pub fn target_path_fraction(&self) -> f32 { unsafe { JPC_PathConstraint_GetTargetPathFraction(*self.0) } }
+    pub fn set_target_path_fraction(&self, fraction: f32) { unsafe { JPC_PathConstraint_SetTargetPathFraction(*self.0, fraction) } }
+    pub fn total_lambda_position(&self) -> [f32; 2] {
+        let v = unsafe { JPC_PathConstraint_GetTotalLambdaPosition(*self.0) };
+        [v.x, v.y]
+    }
+    pub fn total_lambda_position_limits(&self) -> f32 { unsafe { JPC_PathConstraint_GetTotalLambdaPositionLimits(*self.0) } }
+    pub fn total_lambda_motor(&self) -> f32 { unsafe { JPC_PathConstraint_GetTotalLambdaMotor(*self.0) } }
+    pub fn total_lambda_rotation(&self) -> Vec3 { unsafe { JPC_PathConstraint_GetTotalLambdaRotation(*self.0).into_rolt() } }
+    pub fn position_motor_settings(&self) -> MotorSettings { unsafe { MotorSettings(JPC_PathConstraint_GetPositionMotorSettings(*self.0)) } }
+    pub fn set_position_motor_settings(&self, settings: &MotorSettings) { unsafe { JPC_PathConstraint_SetPositionMotorSettings(*self.0, &settings.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
 
     pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
 
@@ -742,4 +1009,38 @@ impl PathConstraint {
     }
 
     pub fn raw(&self) -> *mut JPC_PathConstraint { *self.0 }
+}
+
+// --- path constraint path ---
+
+/// See also: Jolt's [`PathConstraintPath`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_path_constraint_path.html) class.
+pub struct PathConstraintPath(pub(crate) RefConst<JPC_PathConstraintPath>);
+
+impl PathConstraintPath {
+    pub fn raw(&self) -> *const JPC_PathConstraintPath { self.0.get() }
+}
+
+/// See also: Jolt's [`PathConstraintPathHermite`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_path_constraint_path_hermite.html) class.
+pub struct PathConstraintPathHermite(pub(crate) Ref<JPC_PathConstraintPathHermite>);
+
+impl PathConstraintPathHermite {
+    pub fn new() -> Self {
+        unsafe { Self(Ref::from_active(JPC_PathConstraintPathHermite_new())) }
+    }
+
+    pub fn add_point(&self, position: Vec3, tangent: Vec3, normal: Vec3) {
+        unsafe {
+            JPC_PathConstraintPathHermite_AddPoint(*self.0, position.into_jolt(), tangent.into_jolt(), normal.into_jolt())
+        }
+    }
+
+    pub fn as_path(&self) -> PathConstraintPath {
+        PathConstraintPath(unsafe { RefConst::from_active((*self.0).cast::<JPC_PathConstraintPath>()) })
+    }
+
+    pub fn raw(&self) -> *mut JPC_PathConstraintPathHermite { *self.0 }
+}
+
+impl Default for PathConstraintPathHermite {
+    fn default() -> Self { Self::new() }
 }

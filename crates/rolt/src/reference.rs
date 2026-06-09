@@ -123,6 +123,29 @@ unsafe impl RefTarget for JPC_RagdollSettings {
     }
 }
 
+unsafe impl RefTarget for JPC_PathConstraintPath {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_PathConstraintPath_AddRef(value);
+    }
+    unsafe fn release(value: *const Self) {
+        JPC_PathConstraintPath_Release(value);
+    }
+}
+
+unsafe impl RefTarget for JPC_PathConstraintPathHermite {
+    unsafe fn add_ref(value: *const Self) {
+        JPC_PathConstraintPath_AddRef(value.cast::<JPC_PathConstraintPath>());
+    }
+    unsafe fn release(value: *const Self) {
+        JPC_PathConstraintPath_Release(value.cast::<JPC_PathConstraintPath>());
+    }
+}
+
+unsafe impl RefCast<JPC_PathConstraintPath> for JPC_PathConstraintPathHermite {
+    fn cast(value: *const Self) -> *const JPC_PathConstraintPath { value.cast() }
+    fn cast_mut(value: *mut Self) -> *mut JPC_PathConstraintPath { value.cast() }
+}
+
 /// Rust equivalent to Jolt's [`RefConst`](https://jrouwe.github.io/JoltPhysicsDocs/5.1.0/class_ref_const.html)
 pub struct RefConst<T: RefTarget> {
     ptr: *const T,
