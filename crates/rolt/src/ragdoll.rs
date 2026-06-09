@@ -170,6 +170,21 @@ impl Ragdoll {
         (root_offset.into_rolt(), mats)
     }
 
+    /// Drive all joints to target poses using kinematics (moves bodies directly, bypassing constraint solving).
+    pub fn drive_to_pose_using_kinematics(&mut self, root_offset: crate::RVec3, joint_matrices: &[Mat4], delta_time: f32, lock_bodies: bool) {
+        let raw_mats: Vec<JPC_Mat44> = joint_matrices.iter().copied().map(IntoJolt::into_jolt).collect();
+        unsafe {
+            JPC_Ragdoll_DriveToPoseUsingKinematics(
+                self.raw,
+                root_offset.into_jolt(),
+                raw_mats.as_ptr(),
+                raw_mats.len() as u32,
+                delta_time,
+                lock_bodies,
+            )
+        }
+    }
+
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Ragdoll) -> R) -> R {
         f(self.raw)
     }
