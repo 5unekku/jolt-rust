@@ -26,6 +26,11 @@ object-layer-u32 = []
 # ~10% perf cost. Mirrors rapier3d's `enhanced-determinism` feature.
 cross-platform-deterministic = []
 
+# Enable Jolt's WASM SIMD path (USE_WASM_SIMD). Off by default — Safari only
+# got support in March 2023 and older mobile browsers still lack it. Only
+# meaningful when targeting wasm32-unknown-emscripten.
+wasm-simd = []
+
 [dependencies]
 
 [build-dependencies]

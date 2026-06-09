@@ -76,6 +76,35 @@ fn build_joltc() {
         config.define("ANDROID_PLATFORM", "android-21");
     }
 
+    // WASM via Emscripten. Jolt has native Emscripten support; we just need to
+    // point CMake at the Emscripten toolchain file. EMSDK must be set (run
+    // `source emsdk_env.sh` before building). CROSS_PLATFORM_DETERMINISTIC is
+    // forced on because float behavior varies across JS engines.
+    //
+    // Only wasm32-unknown-emscripten is supported — wasm32-unknown-unknown
+    // cannot compile a C++ standard library, which Jolt requires.
+    if target_arch == "wasm32" {
+        assert_eq!(
+            target_os, "emscripten",
+            "joltc-sys only supports the wasm32-unknown-emscripten target. \
+             wasm32-unknown-unknown cannot compile Jolt's C++ runtime."
+        );
+        let emsdk = env::var("EMSDK").expect(
+            "WASM build requires EMSDK to point at your Emscripten SDK install. \
+             Install Emscripten and run `source emsdk_env.sh` before building.",
+        );
+        println!("cargo:rerun-if-env-changed=EMSDK");
+        let toolchain = format!(
+            "{emsdk}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+        );
+        config.define("CMAKE_TOOLCHAIN_FILE", &toolchain);
+        // float determinism across JS engines — always on for WASM
+        config.define("CROSS_PLATFORM_DETERMINISTIC", "ON");
+        if cfg!(feature = "wasm-simd") {
+            config.define("USE_WASM_SIMD", "ON");
+        }
+    }
+
     // Native iOS cross-compile setup. cargo targets aarch64-apple-ios (device)
     // and aarch64-apple-ios-sim (simulator on Apple Silicon); x86_64-apple-ios
     // is the legacy Intel-Mac simulator path. Without this, CMake builds
@@ -145,12 +174,14 @@ fn build_joltc() {
 
     // On macOS and Linux, we need to explicitly link against the C++ standard
     // library here to avoid getting missing symbol errors from Jolt/JoltC.
-    if cfg!(target_os = "macos") {
-        println!("cargo:rustc-flags=-l dylib=c++");
-    }
-
-    if cfg!(target_os = "linux") {
-        println!("cargo:rustc-link-lib=dylib=stdc++");
+    // Emscripten bundles its own C++ runtime, so skip it for WASM.
+    // Use target env vars here — cfg!(target_os) evaluates on the HOST.
+    if target_arch != "wasm32" {
+        if target_os == "macos" {
+            println!("cargo:rustc-flags=-l dylib=c++");
+        } else if target_os == "linux" {
+            println!("cargo:rustc-link-lib=dylib=stdc++");
+        }
     }
 }
 
@@ -198,6 +229,17 @@ fn generate_bindings(flags: &[(&'static str, &'static str)]) -> anyhow::Result<(
         .allowlist_item("JPC_.*")
         .default_enum_style(bindgen::EnumVariation::Consts)
         .prepend_enum_name(false);
+
+    // tell clang the WASM target triple and point at Emscripten's sysroot so
+    // system headers resolve. without this, bindgen picks up native headers
+    // and generates bindings with wrong sizes/alignments for wasm32.
+    if target_arch == "wasm32" {
+        builder = builder.clang_arg("--target=wasm32-unknown-emscripten");
+        if let Ok(emsdk) = env::var("EMSDK") {
+            let sysroot = format!("{emsdk}/upstream/emscripten/cache/sysroot");
+            builder = builder.clang_arg(format!("--sysroot={sysroot}"));
+        }
+    }
 
     // rustc's iOS simulator triple `aarch64-apple-ios-sim` is not valid clang
     // syntax. Translate to clang's form and pass the sysroot so system headers

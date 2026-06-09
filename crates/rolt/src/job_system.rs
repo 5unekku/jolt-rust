@@ -75,3 +75,35 @@ impl Drop for SingleThreadedJobSystem {
         unsafe { JPC_JobSystemSingleThreaded_delete(self.0) }
     }
 }
+
+// private alias so DefaultJobSystem's new() has a single consistent signature
+// regardless of which concrete type is selected underneath.
+#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
+type DefaultJobSystemImpl = SingleThreadedJobSystem;
+#[cfg(not(all(target_arch = "wasm32", not(target_feature = "atomics"))))]
+type DefaultJobSystemImpl = ThreadPoolJobSystem;
+
+/// platform-appropriate job system with a unified constructor.
+///
+/// Resolves to [`SingleThreadedJobSystem`] on `wasm32-unknown-emscripten`
+/// without `-pthread` (no `target_feature = "atomics"`), and to
+/// [`ThreadPoolJobSystem`] everywhere else. Use this instead of constructing
+/// either type directly so game code compiles unchanged across targets.
+pub struct DefaultJobSystem(DefaultJobSystemImpl);
+
+impl DefaultJobSystem {
+    /// create the platform-appropriate job system.
+    /// `max_barriers` is silently ignored on single-threaded WASM builds.
+    pub fn new(max_jobs: u32, max_barriers: u32) -> Self {
+        #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
+        { let _ = max_barriers; return Self(SingleThreadedJobSystem::new(max_jobs)); }
+        #[cfg(not(all(target_arch = "wasm32", not(target_feature = "atomics"))))]
+        Self(ThreadPoolJobSystem::new(max_jobs, max_barriers))
+    }
+}
+
+impl JobSystem for DefaultJobSystem {
+    fn raw_job_system(&self) -> *mut JPC_JobSystem {
+        self.0.raw_job_system()
+    }
+}
