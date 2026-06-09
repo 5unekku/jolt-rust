@@ -589,3 +589,76 @@ impl<T: DebugRendererSimple> DebugRendererSimpleBridge<T> {
         this.draw_line(RVec3::from_jolt(from), RVec3::from_jolt(to), Color::from_jolt(color));
     }
 }
+
+/// See also: Jolt's [`PhysicsMaterial`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_physics_material.html) class.
+pub trait PhysicsMaterial {
+    fn debug_name(&self) -> &str;
+    fn debug_color(&self) -> Color;
+}
+
+struct PhysicsMaterialBridge<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T: PhysicsMaterial> PhysicsMaterialBridge<T> {
+    unsafe extern "C" fn get_debug_name(this: *mut c_void) -> *const std::os::raw::c_char {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.debug_name().as_ptr().cast()
+    }
+
+    unsafe extern "C" fn get_debug_color(this: *mut c_void) -> JPC_Color {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.debug_color().into_jolt()
+    }
+}
+
+/// Holds an implementation of the [`PhysicsMaterial`] trait.
+pub struct PhysicsMaterialImpl<'a> {
+    raw: *mut JPC_PhysicsMaterial,
+    #[allow(dead_code)]
+    remote_this: Option<RemoteDrop>,
+    _marker: PhantomData<&'a ()>,
+}
+
+impl PhysicsMaterialImpl<'static> {
+    pub fn new<T: PhysicsMaterial + 'static>(value: T) -> Self {
+        let fns = JPC_PhysicsMaterialFns {
+            GetDebugName: Some(PhysicsMaterialBridge::<T>::get_debug_name),
+            GetDebugColor: Some(PhysicsMaterialBridge::<T>::get_debug_color),
+        };
+        let this = Box::into_raw(Box::new(value));
+        let raw = unsafe { JPC_PhysicsMaterial_new(this.cast::<c_void>(), fns) };
+        let remote_this = unsafe { RemoteDrop::new(this) };
+        Self { raw, remote_this: Some(remote_this), _marker: PhantomData }
+    }
+}
+
+impl<'a> PhysicsMaterialImpl<'a> {
+    pub fn raw(&self) -> *mut JPC_PhysicsMaterial { self.raw }
+}
+
+impl<'a> Drop for PhysicsMaterialImpl<'a> {
+    fn drop(&mut self) {
+        unsafe { JPC_PhysicsMaterial_Release(self.raw) }
+    }
+}
+
+impl<T: PhysicsMaterial + 'static> From<T> for PhysicsMaterialImpl<'static> {
+    fn from(value: T) -> Self { Self::new(value) }
+}
+
+/// Get the debug name of a pre-existing physics material (e.g. from a shape).
+pub fn physics_material_debug_name(material: &crate::RefConst<JPC_PhysicsMaterial>) -> String {
+    unsafe {
+        let ptr = JPC_PhysicsMaterial_GetDebugName(material.get());
+        if ptr.is_null() {
+            return String::new();
+        }
+        std::ffi::CStr::from_ptr(ptr).to_string_lossy().into_owned()
+    }
+}
+
+/// Get the singleton default physics material.
+pub fn physics_material_default() -> crate::RefConst<JPC_PhysicsMaterial> {
+    unsafe { crate::RefConst::from_active(JPC_PhysicsMaterial_GetDefault()) }
+}
