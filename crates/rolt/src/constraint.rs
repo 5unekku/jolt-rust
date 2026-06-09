@@ -335,6 +335,19 @@ impl Constraint {
     pub fn constraint_priority(&self) -> u32 { unsafe { JPC_Constraint_GetConstraintPriority(*self.0) } }
     pub fn set_constraint_priority(&self, priority: u32) { unsafe { JPC_Constraint_SetConstraintPriority(*self.0, priority) } }
 
+    pub fn notify_shape_changed(&self, body_id: crate::BodyId, delta_com: Vec3) {
+        unsafe { JPC_Constraint_NotifyShapeChanged(*self.0, body_id.raw(), delta_com.into_jolt()) }
+    }
+
+    pub fn constraint_settings_base(&self) -> JPC_ConstraintSettings {
+        unsafe {
+            let obj = JPC_Constraint_GetConstraintSettings(*self.0);
+            let base = JPC_ConstraintSettingsObj_GetBaseSettings(obj);
+            JPC_ConstraintSettingsObj_Release(obj);
+            base
+        }
+    }
+
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Constraint) -> R) -> R {
         self.0.with_raw(f)
     }
@@ -1009,6 +1022,138 @@ impl PathConstraint {
     }
 
     pub fn raw(&self) -> *mut JPC_PathConstraint { *self.0 }
+}
+
+// --- gear constraint ---
+
+/// See also: Jolt's [`GearConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_gear_constraint_settings.html) struct.
+pub struct GearConstraintSettings(pub JPC_GearConstraintSettings);
+
+impl GearConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn hinge_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.HingeAxis1) }
+    pub fn set_hinge_axis1(&mut self, v: Vec3) { self.0.HingeAxis1 = v.into_jolt(); }
+    pub fn hinge_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.HingeAxis2) }
+    pub fn set_hinge_axis2(&mut self, v: Vec3) { self.0.HingeAxis2 = v.into_jolt(); }
+    pub fn ratio(&self) -> f32 { self.0.Ratio }
+    pub fn set_ratio(&mut self, v: f32) { self.0.Ratio = v; }
+}
+
+impl Default for GearConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_GearConstraintSettings>() };
+        unsafe { JPC_GearConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`GearConstraint`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_gear_constraint.html) class.
+pub struct GearConstraint(pub(crate) Ref<JPC_GearConstraint>);
+
+impl GearConstraint {
+    pub fn create(settings: &GearConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+        unsafe {
+            let raw = JPC_GearConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
+            Self(Ref::from_active(raw))
+        }
+    }
+
+    pub fn set_constraints(&self, gear1: &Constraint, gear2: &Constraint) {
+        unsafe { JPC_GearConstraint_SetConstraints(*self.0, *gear1.0, *gear2.0) }
+    }
+
+    pub fn total_lambda(&self) -> f32 { unsafe { JPC_GearConstraint_GetTotalLambda(*self.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_GearConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
+    pub fn raw(&self) -> *mut JPC_GearConstraint { *self.0 }
+}
+
+// --- rack and pinion constraint ---
+
+/// See also: Jolt's [`RackAndPinionConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_rack_and_pinion_constraint_settings.html) struct.
+pub struct RackAndPinionConstraintSettings(pub JPC_RackAndPinionConstraintSettings);
+
+impl RackAndPinionConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn hinge_axis(&self) -> Vec3 { Vec3::from_jolt(self.0.HingeAxis) }
+    pub fn set_hinge_axis(&mut self, v: Vec3) { self.0.HingeAxis = v.into_jolt(); }
+    pub fn slider_axis(&self) -> Vec3 { Vec3::from_jolt(self.0.SliderAxis) }
+    pub fn set_slider_axis(&mut self, v: Vec3) { self.0.SliderAxis = v.into_jolt(); }
+    pub fn ratio(&self) -> f32 { self.0.Ratio }
+    pub fn set_ratio(&mut self, v: f32) { self.0.Ratio = v; }
+}
+
+impl Default for RackAndPinionConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_RackAndPinionConstraintSettings>() };
+        unsafe { JPC_RackAndPinionConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`RackAndPinionConstraint`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_rack_and_pinion_constraint.html) class.
+pub struct RackAndPinionConstraint(pub(crate) Ref<JPC_RackAndPinionConstraint>);
+
+impl RackAndPinionConstraint {
+    pub fn create(settings: &RackAndPinionConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+        unsafe {
+            let raw = JPC_RackAndPinionConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
+            Self(Ref::from_active(raw))
+        }
+    }
+
+    pub fn set_constraints(&self, pinion: &Constraint, rack: &Constraint) {
+        unsafe { JPC_RackAndPinionConstraint_SetConstraints(*self.0, *pinion.0, *rack.0) }
+    }
+
+    pub fn total_lambda(&self) -> f32 { unsafe { JPC_RackAndPinionConstraint_GetTotalLambda(*self.0) } }
+
+    pub fn body1(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody1((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn body2(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_TwoBodyConstraint_GetBody2((*self.0).cast::<JPC_TwoBodyConstraint>())) }
+    }
+
+    pub fn constraint_to_body1_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody1Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn constraint_to_body2_matrix(&self) -> Mat4 {
+        unsafe { JPC_TwoBodyConstraint_GetConstraintToBody2Matrix((*self.0).cast::<JPC_TwoBodyConstraint>()).into_rolt() }
+    }
+
+    pub fn as_constraint(&self) -> Constraint { Constraint(self.0.clone().cast()) }
+
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_RackAndPinionConstraint) -> R) -> R {
+        self.0.with_raw(f)
+    }
+
+    pub fn raw(&self) -> *mut JPC_RackAndPinionConstraint { *self.0 }
 }
 
 // --- path constraint path ---
