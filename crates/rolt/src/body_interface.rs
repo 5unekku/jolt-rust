@@ -4,7 +4,7 @@ use joltc_sys::*;
 
 use crate::{
     Body, BodyId, BroadPhaseLayerFilterImpl, Constraint, FromJolt, IntoJolt, IntoRolt, Mat4,
-    ObjectLayer, ObjectLayerFilterImpl, Quat, RMat4, RefConst, RVec3, Vec3,
+    ObjectLayer, ObjectLayerFilterImpl, Quat, RMat4, RefConst, RVec3, TransformedShape, Vec3,
 };
 
 /// Settings used to create a physics body.
@@ -154,6 +154,13 @@ impl<'physics_system> BodyInterface<'physics_system> {
 
     pub fn get_shape(&self, body_id: BodyId) -> *const JPC_Shape {
         unsafe { JPC_BodyInterface_GetShape(self.raw, body_id.raw()) }
+    }
+
+    /// Snapshot of the body's shape + transform at the current simulation state.
+    ///
+    /// The returned [`TransformedShape`] is heap-allocated and freed on drop.
+    pub fn transformed_shape(&self, body_id: BodyId) -> TransformedShape {
+        TransformedShape::from_raw(unsafe { JPC_BodyInterface_GetTransformedShape(self.raw, body_id.raw()) })
     }
 
     pub fn set_shape(&self, body_id: BodyId, shape: &RefConst<JPC_Shape>, update_mass_properties: bool, activation: JPC_Activation) {

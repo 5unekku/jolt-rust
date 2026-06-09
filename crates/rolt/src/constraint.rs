@@ -357,6 +357,14 @@ impl Constraint {
         unsafe { JPC_Constraint_SetNumPositionStepsOverride(*self.0, steps) }
     }
 
+    pub fn constraint_type(&self) -> JPC_ConstraintType {
+        unsafe { JPC_Constraint_GetType(*self.0) }
+    }
+
+    pub fn constraint_sub_type(&self) -> JPC_ConstraintSubType {
+        unsafe { JPC_Constraint_GetSubType(*self.0) }
+    }
+
     pub fn constraint_settings_base(&self) -> JPC_ConstraintSettings {
         unsafe {
             let obj = JPC_Constraint_GetConstraintSettings(*self.0);

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{BodyId, BroadPhaseLayer, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RefConst, RVec3, Vec3, RMat4};
+use crate::{BodyId, BroadPhaseLayer, FromJolt, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RefConst, RMat4, RVec3, Vec3};
 
 /// See also: Jolt's [`Body`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body.html) class.
 pub struct Body<'interface> {
@@ -154,6 +154,27 @@ impl<'interface> Body<'interface> {
         unsafe { RefConst::from_active(JPC_Body_GetShape(self.inner)) }
     }
 
+    /// world-space AABB enclosing the body.
+    pub fn world_space_bounds(&self) -> (Vec3, Vec3) {
+        let b = unsafe { JPC_Body_GetWorldSpaceBounds(self.inner) };
+        (Vec3::from_jolt(b.Min), Vec3::from_jolt(b.Max))
+    }
+
+    /// motion properties for dynamic/kinematic bodies — `None` for static bodies.
+    pub fn motion_properties(&mut self) -> Option<MotionProperties<'_>> {
+        let raw = unsafe { JPC_Body_GetMotionProperties(self.inner) };
+        if raw.is_null() {
+            None
+        } else {
+            Some(MotionProperties { raw, _phantom: PhantomData })
+        }
+    }
+
+    /// snapshot of the body's world transform + shape, heap-allocated by Jolt.
+    pub fn transformed_shape(&self) -> TransformedShape {
+        TransformedShape::from_raw(unsafe { JPC_Body_GetTransformedShape(self.inner) })
+    }
+
     pub fn user_data(&self) -> u64 { unsafe { JPC_Body_GetUserData(self.inner) } }
     pub fn set_user_data(&mut self, data: u64) {
         unsafe { JPC_Body_SetUserData(self.inner, data) }
@@ -294,4 +315,147 @@ impl<'interface> Body<'interface> {
     }
 
     pub fn raw(&self) -> *mut JPC_Body { self.inner }
+}
+
+/// Borrowed handle to a body's motion properties (only valid for dynamic/kinematic bodies).
+///
+/// See also: Jolt's [`MotionProperties`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_motion_properties.html) class.
+pub struct MotionProperties<'body> {
+    raw: *mut JPC_MotionProperties,
+    _phantom: PhantomData<&'body mut ()>,
+}
+
+impl<'body> MotionProperties<'body> {
+    pub fn motion_quality(&self) -> JPC_MotionQuality {
+        unsafe { JPC_MotionProperties_GetMotionQuality(self.raw) }
+    }
+
+    pub fn allowed_dofs(&self) -> JPC_AllowedDOFs {
+        unsafe { JPC_MotionProperties_GetAllowedDOFs(self.raw) }
+    }
+
+    pub fn linear_velocity(&self) -> Vec3 {
+        unsafe { JPC_MotionProperties_GetLinearVelocity(self.raw).into_rolt() }
+    }
+
+    pub fn set_linear_velocity(&mut self, velocity: Vec3) {
+        unsafe { JPC_MotionProperties_SetLinearVelocity(self.raw, velocity.into_jolt()) }
+    }
+
+    pub fn set_linear_velocity_clamped(&mut self, velocity: Vec3) {
+        unsafe { JPC_MotionProperties_SetLinearVelocityClamped(self.raw, velocity.into_jolt()) }
+    }
+
+    pub fn angular_velocity(&self) -> Vec3 {
+        unsafe { JPC_MotionProperties_GetAngularVelocity(self.raw).into_rolt() }
+    }
+
+    pub fn set_angular_velocity(&mut self, velocity: Vec3) {
+        unsafe { JPC_MotionProperties_SetAngularVelocity(self.raw, velocity.into_jolt()) }
+    }
+
+    pub fn set_angular_velocity_clamped(&mut self, velocity: Vec3) {
+        unsafe { JPC_MotionProperties_SetAngularVelocityClamped(self.raw, velocity.into_jolt()) }
+    }
+
+    pub fn max_linear_velocity(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetMaxLinearVelocity(self.raw) }
+    }
+
+    pub fn set_max_linear_velocity(&mut self, velocity: f32) {
+        unsafe { JPC_MotionProperties_SetMaxLinearVelocity(self.raw, velocity) }
+    }
+
+    pub fn max_angular_velocity(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetMaxAngularVelocity(self.raw) }
+    }
+
+    pub fn set_max_angular_velocity(&mut self, velocity: f32) {
+        unsafe { JPC_MotionProperties_SetMaxAngularVelocity(self.raw, velocity) }
+    }
+
+    pub fn linear_damping(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetLinearDamping(self.raw) }
+    }
+
+    pub fn set_linear_damping(&mut self, damping: f32) {
+        unsafe { JPC_MotionProperties_SetLinearDamping(self.raw, damping) }
+    }
+
+    pub fn angular_damping(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetAngularDamping(self.raw) }
+    }
+
+    pub fn set_angular_damping(&mut self, damping: f32) {
+        unsafe { JPC_MotionProperties_SetAngularDamping(self.raw, damping) }
+    }
+
+    pub fn gravity_factor(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetGravityFactor(self.raw) }
+    }
+
+    pub fn set_gravity_factor(&mut self, factor: f32) {
+        unsafe { JPC_MotionProperties_SetGravityFactor(self.raw, factor) }
+    }
+
+    /// inverse mass (1/mass); 0 for a kinematic body.
+    pub fn inverse_mass(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetInverseMass(self.raw) }
+    }
+
+    pub fn inverse_mass_unchecked(&self) -> f32 {
+        unsafe { JPC_MotionProperties_GetInverseMassUnchecked(self.raw) }
+    }
+
+    pub fn set_inverse_mass(&mut self, inverse_mass: f32) {
+        unsafe { JPC_MotionProperties_SetInverseMass(self.raw, inverse_mass) }
+    }
+}
+
+/// Heap-allocated snapshot of a body's shape + world transform.
+///
+/// See also: Jolt's [`TransformedShape`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_transformed_shape.html) struct.
+pub struct TransformedShape {
+    raw: *mut JPC_TransformedShape,
+}
+
+impl TransformedShape {
+    pub(crate) fn from_raw(raw: *mut JPC_TransformedShape) -> Self {
+        Self { raw }
+    }
+
+    pub fn body_id(&self) -> BodyId {
+        BodyId::new(unsafe { JPC_TransformedShape_GetBodyID(self.raw) })
+    }
+
+    pub fn shape(&self) -> RefConst<JPC_Shape> {
+        unsafe { RefConst::from_active(JPC_TransformedShape_GetShape(self.raw)) }
+    }
+
+    pub fn shape_scale(&self) -> Vec3 {
+        unsafe { JPC_TransformedShape_GetShapeScale(self.raw).into_rolt() }
+    }
+
+    pub fn center_of_mass_transform(&self) -> RMat4 {
+        unsafe { JPC_TransformedShape_GetCenterOfMassTransform(self.raw).into_rolt() }
+    }
+
+    pub fn inverse_center_of_mass_transform(&self) -> RMat4 {
+        unsafe { JPC_TransformedShape_GetInverseCenterOfMassTransform(self.raw).into_rolt() }
+    }
+
+    pub fn world_transform(&self) -> RMat4 {
+        unsafe { JPC_TransformedShape_GetWorldTransform(self.raw).into_rolt() }
+    }
+
+    pub fn world_space_bounds(&self) -> (Vec3, Vec3) {
+        let b = unsafe { JPC_TransformedShape_GetWorldSpaceBounds(self.raw) };
+        (Vec3::from_jolt(b.Min), Vec3::from_jolt(b.Max))
+    }
+}
+
+impl Drop for TransformedShape {
+    fn drop(&mut self) {
+        unsafe { JPC_TransformedShape_delete(self.raw) }
+    }
 }
