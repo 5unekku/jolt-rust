@@ -3,7 +3,7 @@ use joltc_sys::{JPC_Color, JPC_DVec3, JPC_Mat44, JPC_Quat, JPC_Vec2, JPC_Vec3, J
 #[allow(unused_imports)]
 pub use joltc_sys::Real;
 
-pub use glam::{DVec3, DMat4, Mat4, Quat, Vec2, Vec3, Vec4};
+pub use glam::{DMat4, DVec3, Mat4, Quat, Vec2, Vec3, Vec4};
 
 use crate::{FromJolt, IntoJolt};
 
@@ -135,7 +135,10 @@ impl IntoJolt for Vec2 {
     type Jolt = JPC_Vec2;
 
     fn into_jolt(self) -> Self::Jolt {
-        JPC_Vec2 { x: self.x, y: self.y }
+        JPC_Vec2 {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 
@@ -162,11 +165,30 @@ impl IntoJolt for DMat4 {
     fn into_jolt(self) -> Self::Jolt {
         joltc_sys::JPC_DMat44 {
             col: [
-                Vec4::new(self.x_axis.x as f32, self.x_axis.y as f32, self.x_axis.z as f32, self.x_axis.w as f32).into_jolt(),
-                Vec4::new(self.y_axis.x as f32, self.y_axis.y as f32, self.y_axis.z as f32, self.y_axis.w as f32).into_jolt(),
-                Vec4::new(self.z_axis.x as f32, self.z_axis.y as f32, self.z_axis.z as f32, self.z_axis.w as f32).into_jolt(),
+                Vec4::new(
+                    self.x_axis.x as f32,
+                    self.x_axis.y as f32,
+                    self.x_axis.z as f32,
+                    self.x_axis.w as f32,
+                )
+                .into_jolt(),
+                Vec4::new(
+                    self.y_axis.x as f32,
+                    self.y_axis.y as f32,
+                    self.y_axis.z as f32,
+                    self.y_axis.w as f32,
+                )
+                .into_jolt(),
+                Vec4::new(
+                    self.z_axis.x as f32,
+                    self.z_axis.y as f32,
+                    self.z_axis.z as f32,
+                    self.z_axis.w as f32,
+                )
+                .into_jolt(),
             ],
             col3: DVec3::new(self.w_axis.x, self.w_axis.y, self.w_axis.z).into_jolt(),
+            ..Default::default()
         }
     }
 }
@@ -177,9 +199,24 @@ impl FromJolt for DMat4 {
 
     fn from_jolt(value: Self::Jolt) -> Self {
         DMat4::from_cols(
-            glam::DVec4::new(value.col[0].x as f64, value.col[0].y as f64, value.col[0].z as f64, value.col[0].w as f64),
-            glam::DVec4::new(value.col[1].x as f64, value.col[1].y as f64, value.col[1].z as f64, value.col[1].w as f64),
-            glam::DVec4::new(value.col[2].x as f64, value.col[2].y as f64, value.col[2].z as f64, value.col[2].w as f64),
+            glam::DVec4::new(
+                value.col[0].x as f64,
+                value.col[0].y as f64,
+                value.col[0].z as f64,
+                value.col[0].w as f64,
+            ),
+            glam::DVec4::new(
+                value.col[1].x as f64,
+                value.col[1].y as f64,
+                value.col[1].z as f64,
+                value.col[1].w as f64,
+            ),
+            glam::DVec4::new(
+                value.col[2].x as f64,
+                value.col[2].y as f64,
+                value.col[2].z as f64,
+                value.col[2].w as f64,
+            ),
             glam::DVec4::new(value.col3.x, value.col3.y, value.col3.z, 1.0),
         )
     }

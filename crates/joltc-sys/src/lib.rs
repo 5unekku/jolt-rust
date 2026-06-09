@@ -24,6 +24,14 @@ macro_rules! ffi_default {
     };
 }
 
+// JPC_DMat44 is a plain math struct with no C++ constructor logic; zeroing is correct.
+#[cfg(feature = "double-precision")]
+impl Default for JPC_DMat44 {
+    fn default() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
 ffi_default! {
     JPC_BodyCreationSettings -> JPC_BodyCreationSettings_default,
     JPC_ShapeCastSettings -> JPC_ShapeCastSettings_default,
