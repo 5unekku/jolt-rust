@@ -160,6 +160,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
         unsafe { JPC_BodyInterface_SetShape(self.raw, body_id.raw(), shape.get(), update_mass_properties, activation) }
     }
 
+    /// notify the broadphase that a shape was changed in-place.
+    /// `old_com` is the center-of-mass before the change.
     pub fn notify_shape_changed(&self, body_id: BodyId, old_com: Vec3, update_mass_properties: bool, activation: JPC_Activation) {
         unsafe {
             JPC_BodyInterface_NotifyShapeChanged(self.raw, body_id.raw(), old_com.into_jolt(), update_mass_properties, activation)
@@ -197,6 +199,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
         }
     }
 
+    /// like [`set_position_and_rotation`][Self::set_position_and_rotation] but
+    /// does nothing if the pose hasn't changed — avoids waking sleeping bodies.
     pub fn set_position_and_rotation_when_changed(&self, body_id: BodyId, position: RVec3, rotation: Quat, activation: JPC_Activation) {
         unsafe {
             JPC_BodyInterface_SetPositionAndRotationWhenChanged(self.raw, body_id.raw(), position.into_jolt(), rotation.into_jolt(), activation)
@@ -360,6 +364,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
 
     // --- misc ---
 
+    /// force all contacts for this body to be re-evaluated on the next step.
+    /// useful after teleporting a body or changing its shape.
     pub fn invalidate_contact_cache(&self, body_id: BodyId) {
         unsafe { JPC_BodyInterface_InvalidateContactCache(self.raw, body_id.raw()) }
     }
@@ -397,11 +403,13 @@ impl<'physics_system> BodyInterface<'physics_system> {
         if raw.is_null() { None } else { Some(Body::new(raw)) }
     }
 
+    /// create a body without assigning an ID — use [`assign_body_id`][Self::assign_body_id] later.
     pub fn create_body_without_id(&self, settings: &BodyCreationSettings) -> Option<Body<'physics_system>> {
         let raw = unsafe { JPC_BodyInterface_CreateBodyWithoutID(self.raw, &settings.raw) };
         if raw.is_null() { None } else { Some(Body::new(raw)) }
     }
 
+    /// destroy a body that never had an ID assigned.
     pub fn destroy_body_without_id(&self, body: Body<'_>) {
         unsafe { JPC_BodyInterface_DestroyBodyWithoutID(self.raw, body.raw()) }
         std::mem::forget(body);
@@ -412,11 +420,14 @@ impl<'physics_system> BodyInterface<'physics_system> {
         unsafe { JPC_BodyInterface_AssignBodyID(self.raw, body.raw()) }
     }
 
+    /// remove the ID from a body (removes it from lookup), returning the body.
+    /// call [`destroy_body_without_id`][Self::destroy_body_without_id] when done.
     pub fn unassign_body_id(&self, body_id: BodyId) -> Body<'physics_system> {
         let raw = unsafe { JPC_BodyInterface_UnassignBodyID(self.raw, body_id.raw()) };
         Body::new(raw)
     }
 
+    /// batch version of [`unassign_body_id`][Self::unassign_body_id].
     pub fn unassign_body_ids(&self, body_ids: &[BodyId]) -> Vec<Body<'physics_system>> {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
         let mut out: Vec<*mut JPC_Body> = vec![std::ptr::null_mut(); ids.len()];
@@ -440,11 +451,13 @@ impl<'physics_system> BodyInterface<'physics_system> {
         unsafe { JPC_BodyInterface_AddBodiesPrepare(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32) }
     }
 
+    /// commit a prepared batch — bodies become active in the broadphase.
     pub fn add_bodies_finalize(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void, activation: JPC_Activation) {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
         unsafe { JPC_BodyInterface_AddBodiesFinalize(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state, activation) }
     }
 
+    /// cancel a prepared batch without adding anything.
     pub fn add_bodies_abort(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void) {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
         unsafe { JPC_BodyInterface_AddBodiesAbort(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state) }

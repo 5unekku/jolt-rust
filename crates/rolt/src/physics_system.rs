@@ -106,6 +106,7 @@ impl PhysicsSystem {
         }
     }
 
+    /// rebuild the broadphase AABBs — call once after adding all initial bodies, before the first [`update`][Self::update].
     pub fn optimize_broad_phase(&self) {
         unsafe { JPC_PhysicsSystem_OptimizeBroadPhase(self.raw) }
     }
@@ -206,12 +207,12 @@ impl PhysicsSystem {
         unsafe { JPC_PhysicsSystem_RemoveStepListener(self.raw, vehicle.raw()) }
     }
 
-    /// Serialize the physics state into `recorder`.
+    /// serialize all physics state for deterministic replay or save/load.
     pub fn save_state(&self, recorder: &mut StateRecorder) {
         unsafe { JPC_PhysicsSystem_SaveState(self.raw, recorder.raw()) }
     }
 
-    /// Restore physics state from `recorder`.  Returns `false` on failure.
+    /// restore previously saved state — returns `false` on failure.
     pub fn restore_state(&mut self, recorder: &mut StateRecorder) -> bool {
         unsafe { JPC_PhysicsSystem_RestoreState(self.raw, recorder.raw()) }
     }
@@ -303,10 +304,12 @@ impl PhysicsSystem {
         }
     }
 
+    /// draw constraint limit axes (only available with `JPH_DEBUG_RENDERER`).
     pub fn draw_constraint_limits(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
         unsafe { JPC_PhysicsSystem_DrawConstraintLimits(self.raw, renderer.raw()) }
     }
 
+    /// draw constraint reference frames (only available with `JPH_DEBUG_RENDERER`).
     pub fn draw_constraint_reference_frame(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
         unsafe { JPC_PhysicsSystem_DrawConstraintReferenceFrame(self.raw, renderer.raw()) }
     }

@@ -68,26 +68,32 @@ impl SoftBodySharedSettings {
         }
     }
 
+    /// reorder internal data for cache efficiency — call once before first simulation use.
     pub fn optimize(&mut self) {
         unsafe { JPC_SoftBodySharedSettings_Optimize(*self.0) }
     }
 
+    /// compute rest lengths for all edge springs from current vertex positions.
     pub fn calculate_edge_lengths(&mut self) {
         unsafe { JPC_SoftBodySharedSettings_CalculateEdgeLengths(*self.0) }
     }
 
+    /// precompute dihedral angle constants for bend constraints.
     pub fn calculate_bend_constraint_constants(&mut self) {
         unsafe { JPC_SoftBodySharedSettings_CalculateBendConstraintConstants(*self.0) }
     }
 
+    /// precompute rest volumes for volume constraints.
     pub fn calculate_volume_constraint_volumes(&mut self) {
         unsafe { JPC_SoftBodySharedSettings_CalculateVolumeConstraintVolumes(*self.0) }
     }
 
+    /// compute rest lengths for long-range attachment constraints.
     pub fn calculate_lra_lengths(&mut self, max_distance_multiplier: f32) {
         unsafe { JPC_SoftBodySharedSettings_CalculateLRALengths(*self.0, max_distance_multiplier) }
     }
 
+    /// precompute normals for skinned vertex constraints.
     pub fn calculate_skinned_constraint_normals(&mut self) {
         unsafe { JPC_SoftBodySharedSettings_CalculateSkinnedConstraintNormals(*self.0) }
     }

@@ -481,16 +481,20 @@ impl<T: SimShapeFilter> SimShapeFilterBridge<T> {
     }
 }
 
+/// receives hits from [`NarrowPhaseQuery::cast_shape`][crate::NarrowPhaseQuery::cast_shape].
 pub trait CastShapeCollector {
     fn reset(&mut self);
     fn add_hit(&mut self, base: &mut CastShapeBase, result: &JPC_ShapeCastResult);
 }
 
+/// handle passed to [`CastShapeCollector::add_hit`] — used to tune early-out.
 pub struct CastShapeBase {
     base: *mut JPC_CastShapeCollector,
 }
 
 impl CastShapeBase {
+    /// set the fraction beyond which further hits are ignored (default 1.0).
+    /// call with the current hit's fraction to stop collecting farther hits.
     pub fn update_early_out_fraction(&mut self, fraction: f32) {
         unsafe {
             JPC_CastShapeCollector_UpdateEarlyOutFraction(self.base, fraction);
@@ -524,16 +528,19 @@ impl<T: CastShapeCollector> CastShapeCollectorBridge<T> {
     }
 }
 
+/// receives hits from [`NarrowPhaseQuery::collide_shape`][crate::NarrowPhaseQuery::collide_shape].
 pub trait CollideShapeCollector {
     fn reset(&mut self);
     fn add_hit(&mut self, base: &mut CollideShapeBase, result: &JPC_CollideShapeResult);
 }
 
+/// handle passed to [`CollideShapeCollector::add_hit`] — used to tune early-out.
 pub struct CollideShapeBase {
     base: *mut JPC_CollideShapeCollector,
 }
 
 impl CollideShapeBase {
+    /// limit the penetration depth beyond which further hits are ignored.
     pub fn update_early_out_fraction(&mut self, fraction: f32) {
         unsafe {
             JPC_CollideShapeCollector_UpdateEarlyOutFraction(self.base, fraction);

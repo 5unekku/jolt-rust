@@ -66,10 +66,13 @@ impl FromJolt for RayCastResult {
     }
 }
 
+/// a shape cast query — shape swept from `center_of_mass_start` along `direction`.
 pub struct RShapeCast {
     pub shape: RefConst<JPC_Shape>,
     pub scale: Vec3,
+    /// world-space transform of the shape's center of mass at the start of the cast.
     pub center_of_mass_start: JPC_RMat44,
+    /// sweep direction and distance.
     pub direction: Vec3,
     // const JPC_AABox ShapeWorldBounds;
 }
@@ -85,6 +88,7 @@ pub struct CastShapeArgs<'a> {
     pub shape_filter: Option<ShapeFilterImpl<'a>>,
 }
 
+/// collects only the closest hit from a shape cast.
 #[non_exhaustive]
 #[derive(Default)]
 pub struct ClosestHitCastShapeCollector {
@@ -138,6 +142,7 @@ pub struct CollideShapeArgs<'a> {
     pub shape_filter: Option<ShapeFilterImpl<'a>>,
 }
 
+/// collects every overlap hit from a collide-shape query.
 #[non_exhaustive]
 #[derive(Default)]
 pub struct AllHitCollideShapeCollector {
