@@ -4,7 +4,7 @@ use std::mem;
 use joltc_sys::*;
 
 use crate::{
-    BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CastShapeBase, CastShapeCollector,
+    Body, BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CastShapeBase, CastShapeCollector,
     CastShapeCollectorImpl, CollideShapeBase, CollideShapeCollector, CollideShapeCollectorImpl,
     CollideShapeSettings, FromJolt, IntoJolt, ObjectLayerFilterImpl, RefConst, RVec3,
     ShapeCastSettings, ShapeFilterImpl, Vec3,
@@ -233,4 +233,32 @@ impl<'physics_system> NarrowPhaseQuery<'physics_system> {
     pub fn raw(&self) -> *const JPC_NarrowPhaseQuery {
         self.raw
     }
+}
+
+/// Estimate the collision response between two bodies at a given contact manifold.
+///
+/// See also: Jolt's [`EstimateCollisionResponse`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/group__Physics.html).
+pub fn estimate_collision_response(
+    body1: &Body<'_>,
+    body2: &Body<'_>,
+    manifold: &JPC_ContactManifold,
+    combined_friction: f32,
+    combined_restitution: f32,
+    min_velocity_for_restitution: f32,
+    num_iterations: u32,
+) -> JPC_CollisionEstimationResult {
+    let mut result = unsafe { std::mem::zeroed::<JPC_CollisionEstimationResult>() };
+    unsafe {
+        JPC_EstimateCollisionResponse(
+            body1.raw(),
+            body2.raw(),
+            manifold,
+            &mut result,
+            combined_friction,
+            combined_restitution,
+            min_velocity_for_restitution,
+            num_iterations,
+        )
+    }
+    result
 }

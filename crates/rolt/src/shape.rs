@@ -229,6 +229,10 @@ impl MutableCompoundShape {
         unsafe { JPC_MutableCompoundShape_ModifyShape(*self.0, index, position.into_jolt(), rotation.into_jolt()) }
     }
 
+    pub fn modify_shape2(&mut self, index: u32, position: Vec3, rotation: Quat, shape: &RefConst<JPC_Shape>) {
+        unsafe { JPC_MutableCompoundShape_ModifyShape2(*self.0, index, position.into_jolt(), rotation.into_jolt(), shape.get()) }
+    }
+
     pub fn adjust_center_of_mass(&mut self) {
         unsafe { JPC_MutableCompoundShape_AdjustCenterOfMass(*self.0) }
     }
