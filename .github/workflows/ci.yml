@@ -68,3 +68,58 @@ jobs:
 
     - name: Rustfmt
       run: cargo fmt --all --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    container: rust:slim-trixie
+    name: Clippy
+
+    steps:
+    - name: Install C/C++ build deps
+      run: |
+        apt-get update -qq
+        apt-get install -y --no-install-recommends \
+          git cmake ninja-build clang libclang-dev
+
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: stable
+        components: clippy
+
+    - uses: swatinem/rust-cache@v2
+
+    - name: Clippy
+      run: cargo clippy --workspace --all-features -- -D warnings
+
+  docs:
+    runs-on: ubuntu-latest
+    container: rust:slim-trixie
+    name: Docs
+
+    steps:
+    - name: Install C/C++ build deps
+      run: |
+        apt-get update -qq
+        apt-get install -y --no-install-recommends \
+          git cmake ninja-build clang libclang-dev
+
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: stable
+
+    - uses: swatinem/rust-cache@v2
+
+    - name: Doc
+      run: cargo doc --no-deps --all-features
+      env:
+        RUSTDOCFLAGS: -D warnings
