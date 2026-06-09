@@ -153,10 +153,8 @@ impl<'physics_system> BodyInterface<'physics_system> {
         unsafe { JPC_BodyInterface_GetShape(self.raw, body_id.raw()) }
     }
 
-    /// # Safety
-    /// `shape` must be a valid shape.
-    pub unsafe fn set_shape(&self, body_id: BodyId, shape: *const JPC_Shape, update_mass_properties: bool, activation: JPC_Activation) {
-        JPC_BodyInterface_SetShape(self.raw, body_id.raw(), shape, update_mass_properties, activation)
+    pub fn set_shape(&self, body_id: BodyId, shape: &RefConst<JPC_Shape>, update_mass_properties: bool, activation: JPC_Activation) {
+        unsafe { JPC_BodyInterface_SetShape(self.raw, body_id.raw(), shape.get(), update_mass_properties, activation) }
     }
 
     pub fn notify_shape_changed(&self, body_id: BodyId, old_com: Vec3, update_mass_properties: bool, activation: JPC_Activation) {
@@ -366,26 +364,20 @@ impl<'physics_system> BodyInterface<'physics_system> {
     // --- soft body ---
 
     /// Create a soft body (does not add it — call `add_body` separately).
-    /// # Safety
-    /// `settings` must be initialized and valid with a valid `JPC_SoftBodySharedSettings` pointer.
-    pub unsafe fn create_soft_body(&self, settings: &JPC_SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
-        let raw = JPC_BodyInterface_CreateSoftBody(self.raw, settings);
+    pub fn create_soft_body(&self, settings: &crate::SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateSoftBody(self.raw, &settings.0) };
         if raw.is_null() { None } else { Some(Body::new(raw)) }
     }
 
     /// Create a soft body with a specific ID (does not add it).
-    /// # Safety
-    /// `settings` must be initialized and valid.
-    pub unsafe fn create_soft_body_with_id(&self, body_id: BodyId, settings: &JPC_SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
-        let raw = JPC_BodyInterface_CreateSoftBodyWithID(self.raw, body_id.raw(), settings);
+    pub fn create_soft_body_with_id(&self, body_id: BodyId, settings: &crate::SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateSoftBodyWithID(self.raw, body_id.raw(), &settings.0) };
         if raw.is_null() { None } else { Some(Body::new(raw)) }
     }
 
     /// Create, add, and activate a soft body in one call.
-    /// # Safety
-    /// `settings` must be initialized and valid.
-    pub unsafe fn create_and_add_soft_body(&self, settings: &JPC_SoftBodyCreationSettings, activation: JPC_Activation) -> BodyId {
-        BodyId::new(JPC_BodyInterface_CreateAndAddSoftBody(self.raw, settings, activation))
+    pub fn create_and_add_soft_body(&self, settings: &crate::SoftBodyCreationSettings, activation: JPC_Activation) -> BodyId {
+        BodyId::new(unsafe { JPC_BodyInterface_CreateAndAddSoftBody(self.raw, &settings.0, activation) })
     }
 
     pub fn raw(&self) -> *mut JPC_BodyInterface { self.raw }

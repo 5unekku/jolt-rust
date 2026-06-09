@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::Ref;
+use crate::{Ref, RefConst};
 
 /// Shared (ref-counted) settings for a soft body — mesh, edges, faces, constraints.
 ///
@@ -46,9 +46,8 @@ impl SoftBodySharedSettings {
         unsafe { JPC_SoftBodySharedSettings_AddLRA(*self.0, lra) }
     }
 
-    /// Add a physics material slot.  The material pointer must outlive this settings object.
-    pub unsafe fn add_material(&mut self, material: *const JPC_PhysicsMaterial) {
-        JPC_SoftBodySharedSettings_AddMaterial(*self.0, material)
+    pub fn add_material(&mut self, material: &RefConst<JPC_PhysicsMaterial>) {
+        unsafe { JPC_SoftBodySharedSettings_AddMaterial(*self.0, material.get()) }
     }
 
     /// Auto-generate edge/bend constraints from the mesh.

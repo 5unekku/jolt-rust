@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, Ref, Vec3};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, PhysicsSystem, Ref, Vec3};
 
 /// Settings for a ragdoll — a collection of bodies connected by constraints.
 ///
@@ -42,21 +42,15 @@ impl RagdollSettings {
         unsafe { JPC_RagdollSettings_SetPartPointConstraint(self.raw, part_index as _, settings) }
     }
 
-    /// Create a ragdoll and add it to the given physics system.
-    /// # Safety
-    /// `physics_system` must be valid and outlive the returned `Ragdoll`.
-    pub unsafe fn create_ragdoll(
+    pub fn create_ragdoll(
         &self,
         collision_group: JPC_GroupID,
         user_data: u64,
-        physics_system: *mut JPC_PhysicsSystem,
+        physics_system: &PhysicsSystem,
     ) -> Option<Ragdoll> {
-        let raw = JPC_RagdollSettings_CreateRagdoll(
-            self.raw,
-            collision_group,
-            user_data,
-            physics_system,
-        );
+        let raw = unsafe {
+            JPC_RagdollSettings_CreateRagdoll(self.raw, collision_group, user_data, physics_system.raw())
+        };
         if raw.is_null() { None } else { Some(Ragdoll { raw }) }
     }
 

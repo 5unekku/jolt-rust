@@ -1,6 +1,325 @@
 use joltc_sys::*;
 
-use crate::{Body, IntoJolt, IntoRolt, Mat4, Quat, Ref, Vec3};
+use crate::{Body, FromJolt, IntoJolt, IntoRolt, Mat4, MotorSettings, Quat, Ref, RVec3, SpringSettings, Vec3};
+
+// --- constraint settings ---
+
+/// See also: Jolt's [`FixedConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_fixed_constraint_settings.html) struct.
+pub struct FixedConstraintSettings(pub JPC_FixedConstraintSettings);
+
+impl FixedConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn auto_detect_point(&self) -> bool { self.0.AutoDetectPoint }
+    pub fn set_auto_detect_point(&mut self, v: bool) { self.0.AutoDetectPoint = v; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn axis_x1(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisX1) }
+    pub fn set_axis_x1(&mut self, v: Vec3) { self.0.AxisX1 = v.into_jolt(); }
+    pub fn axis_y1(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisY1) }
+    pub fn set_axis_y1(&mut self, v: Vec3) { self.0.AxisY1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+    pub fn axis_x2(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisX2) }
+    pub fn set_axis_x2(&mut self, v: Vec3) { self.0.AxisX2 = v.into_jolt(); }
+    pub fn axis_y2(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisY2) }
+    pub fn set_axis_y2(&mut self, v: Vec3) { self.0.AxisY2 = v.into_jolt(); }
+}
+
+impl Default for FixedConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_FixedConstraintSettings>() };
+        unsafe { JPC_FixedConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`HingeConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_hinge_constraint_settings.html) struct.
+pub struct HingeConstraintSettings(pub JPC_HingeConstraintSettings);
+
+impl HingeConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn hinge_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.HingeAxis1) }
+    pub fn set_hinge_axis1(&mut self, v: Vec3) { self.0.HingeAxis1 = v.into_jolt(); }
+    pub fn normal_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.NormalAxis1) }
+    pub fn set_normal_axis1(&mut self, v: Vec3) { self.0.NormalAxis1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+    pub fn hinge_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.HingeAxis2) }
+    pub fn set_hinge_axis2(&mut self, v: Vec3) { self.0.HingeAxis2 = v.into_jolt(); }
+    pub fn normal_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.NormalAxis2) }
+    pub fn set_normal_axis2(&mut self, v: Vec3) { self.0.NormalAxis2 = v.into_jolt(); }
+    pub fn limits_min(&self) -> f32 { self.0.LimitsMin }
+    pub fn set_limits_min(&mut self, v: f32) { self.0.LimitsMin = v; }
+    pub fn limits_max(&self) -> f32 { self.0.LimitsMax }
+    pub fn set_limits_max(&mut self, v: f32) { self.0.LimitsMax = v; }
+    pub fn limits_spring_settings(&self) -> SpringSettings { SpringSettings(self.0.LimitsSpringSettings) }
+    pub fn set_limits_spring_settings(&mut self, s: SpringSettings) { self.0.LimitsSpringSettings = s.0; }
+    pub fn max_friction_torque(&self) -> f32 { self.0.MaxFrictionTorque }
+    pub fn set_max_friction_torque(&mut self, v: f32) { self.0.MaxFrictionTorque = v; }
+    pub fn motor_settings(&self) -> MotorSettings { MotorSettings(self.0.MotorSettings) }
+    pub fn set_motor_settings(&mut self, s: MotorSettings) { self.0.MotorSettings = s.0; }
+}
+
+impl Default for HingeConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_HingeConstraintSettings>() };
+        unsafe { JPC_HingeConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`SliderConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_slider_constraint_settings.html) struct.
+pub struct SliderConstraintSettings(pub JPC_SliderConstraintSettings);
+
+impl SliderConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn auto_detect_point(&self) -> bool { self.0.AutoDetectPoint }
+    pub fn set_auto_detect_point(&mut self, v: bool) { self.0.AutoDetectPoint = v; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn slider_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.SliderAxis1) }
+    pub fn set_slider_axis1(&mut self, v: Vec3) { self.0.SliderAxis1 = v.into_jolt(); }
+    pub fn normal_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.NormalAxis1) }
+    pub fn set_normal_axis1(&mut self, v: Vec3) { self.0.NormalAxis1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+    pub fn slider_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.SliderAxis2) }
+    pub fn set_slider_axis2(&mut self, v: Vec3) { self.0.SliderAxis2 = v.into_jolt(); }
+    pub fn normal_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.NormalAxis2) }
+    pub fn set_normal_axis2(&mut self, v: Vec3) { self.0.NormalAxis2 = v.into_jolt(); }
+    pub fn limits_min(&self) -> f32 { self.0.LimitsMin }
+    pub fn set_limits_min(&mut self, v: f32) { self.0.LimitsMin = v; }
+    pub fn limits_max(&self) -> f32 { self.0.LimitsMax }
+    pub fn set_limits_max(&mut self, v: f32) { self.0.LimitsMax = v; }
+    pub fn limits_spring_settings(&self) -> SpringSettings { SpringSettings(self.0.LimitsSpringSettings) }
+    pub fn set_limits_spring_settings(&mut self, s: SpringSettings) { self.0.LimitsSpringSettings = s.0; }
+    pub fn max_friction_force(&self) -> f32 { self.0.MaxFrictionForce }
+    pub fn set_max_friction_force(&mut self, v: f32) { self.0.MaxFrictionForce = v; }
+    pub fn motor_settings(&self) -> MotorSettings { MotorSettings(self.0.MotorSettings) }
+    pub fn set_motor_settings(&mut self, s: MotorSettings) { self.0.MotorSettings = s.0; }
+}
+
+impl Default for SliderConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_SliderConstraintSettings>() };
+        unsafe { JPC_SliderConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`DistanceConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_distance_constraint_settings.html) struct.
+pub struct DistanceConstraintSettings(pub JPC_DistanceConstraintSettings);
+
+impl DistanceConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+    pub fn min_distance(&self) -> f32 { self.0.MinDistance }
+    pub fn set_min_distance(&mut self, v: f32) { self.0.MinDistance = v; }
+    pub fn max_distance(&self) -> f32 { self.0.MaxDistance }
+    pub fn set_max_distance(&mut self, v: f32) { self.0.MaxDistance = v; }
+    pub fn limits_spring_settings(&self) -> SpringSettings { SpringSettings(self.0.LimitsSpringSettings) }
+    pub fn set_limits_spring_settings(&mut self, s: SpringSettings) { self.0.LimitsSpringSettings = s.0; }
+}
+
+impl Default for DistanceConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_DistanceConstraintSettings>() };
+        unsafe { JPC_DistanceConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`SixDOFConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_six_d_o_f_constraint_settings.html) struct.
+pub struct SixDofConstraintSettings(pub JPC_SixDOFConstraintSettings);
+
+impl SixDofConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn position1(&self) -> RVec3 { RVec3::from_jolt(self.0.Position1) }
+    pub fn set_position1(&mut self, v: RVec3) { self.0.Position1 = v.into_jolt(); }
+    pub fn axis_x1(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisX1) }
+    pub fn set_axis_x1(&mut self, v: Vec3) { self.0.AxisX1 = v.into_jolt(); }
+    pub fn axis_y1(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisY1) }
+    pub fn set_axis_y1(&mut self, v: Vec3) { self.0.AxisY1 = v.into_jolt(); }
+    pub fn position2(&self) -> RVec3 { RVec3::from_jolt(self.0.Position2) }
+    pub fn set_position2(&mut self, v: RVec3) { self.0.Position2 = v.into_jolt(); }
+    pub fn axis_x2(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisX2) }
+    pub fn set_axis_x2(&mut self, v: Vec3) { self.0.AxisX2 = v.into_jolt(); }
+    pub fn axis_y2(&self) -> Vec3 { Vec3::from_jolt(self.0.AxisY2) }
+    pub fn set_axis_y2(&mut self, v: Vec3) { self.0.AxisY2 = v.into_jolt(); }
+    pub fn max_friction(&self) -> &[f32; 6] { &self.0.MaxFriction }
+    pub fn set_max_friction(&mut self, v: [f32; 6]) { self.0.MaxFriction = v; }
+    pub fn limit_min(&self) -> &[f32; 6] { &self.0.LimitMin }
+    pub fn set_limit_min(&mut self, v: [f32; 6]) { self.0.LimitMin = v; }
+    pub fn limit_max(&self) -> &[f32; 6] { &self.0.LimitMax }
+    pub fn set_limit_max(&mut self, v: [f32; 6]) { self.0.LimitMax = v; }
+}
+
+impl Default for SixDofConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_SixDOFConstraintSettings>() };
+        unsafe { JPC_SixDOFConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`PointConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_point_constraint_settings.html) struct.
+pub struct PointConstraintSettings(pub JPC_PointConstraintSettings);
+
+impl PointConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+}
+
+impl Default for PointConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_PointConstraintSettings>() };
+        unsafe { JPC_PointConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`ConeConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_cone_constraint_settings.html) struct.
+pub struct ConeConstraintSettings(pub JPC_ConeConstraintSettings);
+
+impl ConeConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn point1(&self) -> RVec3 { RVec3::from_jolt(self.0.Point1) }
+    pub fn set_point1(&mut self, v: RVec3) { self.0.Point1 = v.into_jolt(); }
+    pub fn twist_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.TwistAxis1) }
+    pub fn set_twist_axis1(&mut self, v: Vec3) { self.0.TwistAxis1 = v.into_jolt(); }
+    pub fn point2(&self) -> RVec3 { RVec3::from_jolt(self.0.Point2) }
+    pub fn set_point2(&mut self, v: RVec3) { self.0.Point2 = v.into_jolt(); }
+    pub fn twist_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.TwistAxis2) }
+    pub fn set_twist_axis2(&mut self, v: Vec3) { self.0.TwistAxis2 = v.into_jolt(); }
+    pub fn half_cone_angle(&self) -> f32 { self.0.HalfConeAngle }
+    pub fn set_half_cone_angle(&mut self, v: f32) { self.0.HalfConeAngle = v; }
+}
+
+impl Default for ConeConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_ConeConstraintSettings>() };
+        unsafe { JPC_ConeConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`PulleyConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_pulley_constraint_settings.html) struct.
+pub struct PulleyConstraintSettings(pub JPC_PulleyConstraintSettings);
+
+impl PulleyConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn body_point1(&self) -> RVec3 { RVec3::from_jolt(self.0.BodyPoint1) }
+    pub fn set_body_point1(&mut self, v: RVec3) { self.0.BodyPoint1 = v.into_jolt(); }
+    pub fn fixed_point1(&self) -> RVec3 { RVec3::from_jolt(self.0.FixedPoint1) }
+    pub fn set_fixed_point1(&mut self, v: RVec3) { self.0.FixedPoint1 = v.into_jolt(); }
+    pub fn body_point2(&self) -> RVec3 { RVec3::from_jolt(self.0.BodyPoint2) }
+    pub fn set_body_point2(&mut self, v: RVec3) { self.0.BodyPoint2 = v.into_jolt(); }
+    pub fn fixed_point2(&self) -> RVec3 { RVec3::from_jolt(self.0.FixedPoint2) }
+    pub fn set_fixed_point2(&mut self, v: RVec3) { self.0.FixedPoint2 = v.into_jolt(); }
+    pub fn ratio(&self) -> f32 { self.0.Ratio }
+    pub fn set_ratio(&mut self, v: f32) { self.0.Ratio = v; }
+    pub fn min_length(&self) -> f32 { self.0.MinLength }
+    pub fn set_min_length(&mut self, v: f32) { self.0.MinLength = v; }
+    pub fn max_length(&self) -> f32 { self.0.MaxLength }
+    pub fn set_max_length(&mut self, v: f32) { self.0.MaxLength = v; }
+}
+
+impl Default for PulleyConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_PulleyConstraintSettings>() };
+        unsafe { JPC_PulleyConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`SwingTwistConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_swing_twist_constraint_settings.html) struct.
+pub struct SwingTwistConstraintSettings(pub JPC_SwingTwistConstraintSettings);
+
+impl SwingTwistConstraintSettings {
+    pub fn space(&self) -> JPC_ConstraintSpace { self.0.Space }
+    pub fn set_space(&mut self, space: JPC_ConstraintSpace) { self.0.Space = space; }
+    pub fn position1(&self) -> RVec3 { RVec3::from_jolt(self.0.Position1) }
+    pub fn set_position1(&mut self, v: RVec3) { self.0.Position1 = v.into_jolt(); }
+    pub fn twist_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.TwistAxis1) }
+    pub fn set_twist_axis1(&mut self, v: Vec3) { self.0.TwistAxis1 = v.into_jolt(); }
+    pub fn plane_axis1(&self) -> Vec3 { Vec3::from_jolt(self.0.PlaneAxis1) }
+    pub fn set_plane_axis1(&mut self, v: Vec3) { self.0.PlaneAxis1 = v.into_jolt(); }
+    pub fn position2(&self) -> RVec3 { RVec3::from_jolt(self.0.Position2) }
+    pub fn set_position2(&mut self, v: RVec3) { self.0.Position2 = v.into_jolt(); }
+    pub fn twist_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.TwistAxis2) }
+    pub fn set_twist_axis2(&mut self, v: Vec3) { self.0.TwistAxis2 = v.into_jolt(); }
+    pub fn plane_axis2(&self) -> Vec3 { Vec3::from_jolt(self.0.PlaneAxis2) }
+    pub fn set_plane_axis2(&mut self, v: Vec3) { self.0.PlaneAxis2 = v.into_jolt(); }
+    pub fn swing_type(&self) -> JPC_SwingType { self.0.SwingType }
+    pub fn set_swing_type(&mut self, v: JPC_SwingType) { self.0.SwingType = v; }
+    pub fn normal_half_cone_angle(&self) -> f32 { self.0.NormalHalfConeAngle }
+    pub fn set_normal_half_cone_angle(&mut self, v: f32) { self.0.NormalHalfConeAngle = v; }
+    pub fn plane_half_cone_angle(&self) -> f32 { self.0.PlaneHalfConeAngle }
+    pub fn set_plane_half_cone_angle(&mut self, v: f32) { self.0.PlaneHalfConeAngle = v; }
+    pub fn twist_min_angle(&self) -> f32 { self.0.TwistMinAngle }
+    pub fn set_twist_min_angle(&mut self, v: f32) { self.0.TwistMinAngle = v; }
+    pub fn twist_max_angle(&self) -> f32 { self.0.TwistMaxAngle }
+    pub fn set_twist_max_angle(&mut self, v: f32) { self.0.TwistMaxAngle = v; }
+    pub fn max_friction_torque(&self) -> f32 { self.0.MaxFrictionTorque }
+    pub fn set_max_friction_torque(&mut self, v: f32) { self.0.MaxFrictionTorque = v; }
+    pub fn swing_motor_settings(&self) -> MotorSettings { MotorSettings(self.0.SwingMotorSettings) }
+    pub fn set_swing_motor_settings(&mut self, s: MotorSettings) { self.0.SwingMotorSettings = s.0; }
+    pub fn twist_motor_settings(&self) -> MotorSettings { MotorSettings(self.0.TwistMotorSettings) }
+    pub fn set_twist_motor_settings(&mut self, s: MotorSettings) { self.0.TwistMotorSettings = s.0; }
+}
+
+impl Default for SwingTwistConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_SwingTwistConstraintSettings>() };
+        unsafe { JPC_SwingTwistConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
+
+/// See also: Jolt's [`PathConstraintSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_path_constraint_settings.html) struct.
+pub struct PathConstraintSettings(pub JPC_PathConstraintSettings);
+
+impl PathConstraintSettings {
+    /// Raw pointer to the path object.  Must outlive this settings object.
+    pub fn path(&self) -> *mut JPC_PathConstraintPath { self.0.Path }
+    pub fn set_path(&mut self, path: *mut JPC_PathConstraintPath) { self.0.Path = path; }
+    pub fn path_position(&self) -> Vec3 { Vec3::from_jolt(self.0.PathPosition) }
+    pub fn set_path_position(&mut self, v: Vec3) { self.0.PathPosition = v.into_jolt(); }
+    pub fn path_rotation(&self) -> Quat { Quat::from_jolt(self.0.PathRotation) }
+    pub fn set_path_rotation(&mut self, v: Quat) { self.0.PathRotation = v.into_jolt(); }
+    pub fn path_fraction(&self) -> f32 { self.0.PathFraction }
+    pub fn set_path_fraction(&mut self, v: f32) { self.0.PathFraction = v; }
+    pub fn max_friction_force(&self) -> f32 { self.0.MaxFrictionForce }
+    pub fn set_max_friction_force(&mut self, v: f32) { self.0.MaxFrictionForce = v; }
+    pub fn position_motor_settings(&self) -> MotorSettings { MotorSettings(self.0.PositionMotorSettings) }
+    pub fn set_position_motor_settings(&mut self, s: MotorSettings) { self.0.PositionMotorSettings = s.0; }
+    pub fn rotation_constraint_type(&self) -> JPC_PathRotationConstraintType { self.0.RotationConstraintType }
+    pub fn set_rotation_constraint_type(&mut self, v: JPC_PathRotationConstraintType) { self.0.RotationConstraintType = v; }
+}
+
+impl Default for PathConstraintSettings {
+    fn default() -> Self {
+        let mut raw = unsafe { std::mem::zeroed::<JPC_PathConstraintSettings>() };
+        unsafe { JPC_PathConstraintSettings_default(&mut raw) };
+        Self(raw)
+    }
+}
 
 /// Base constraint wrapper.  Use [`Constraint::raw`] to pass to physics system.
 ///
@@ -28,9 +347,9 @@ impl Constraint {
 pub struct FixedConstraint(pub(crate) Ref<JPC_Constraint>);
 
 impl FixedConstraint {
-    pub fn create(settings: &JPC_FixedConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &FixedConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_FixedConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_FixedConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -66,9 +385,9 @@ impl FixedConstraint {
 pub struct DistanceConstraint(pub(crate) Ref<JPC_DistanceConstraint>);
 
 impl DistanceConstraint {
-    pub fn create(settings: &JPC_DistanceConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &DistanceConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_DistanceConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_DistanceConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -104,9 +423,9 @@ impl DistanceConstraint {
 pub struct HingeConstraint(pub(crate) Ref<JPC_HingeConstraint>);
 
 impl HingeConstraint {
-    pub fn create(settings: &JPC_HingeConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &HingeConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_HingeConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_HingeConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -140,9 +459,9 @@ impl HingeConstraint {
 pub struct SliderConstraint(pub(crate) Ref<JPC_SliderConstraint>);
 
 impl SliderConstraint {
-    pub fn create(settings: &JPC_SliderConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &SliderConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_SliderConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_SliderConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -176,9 +495,9 @@ impl SliderConstraint {
 pub struct PointConstraint(pub(crate) Ref<JPC_PointConstraint>);
 
 impl PointConstraint {
-    pub fn create(settings: &JPC_PointConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &PointConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_PointConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_PointConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -201,9 +520,9 @@ impl PointConstraint {
 pub struct SixDofConstraint(pub(crate) Ref<JPC_Constraint>);
 
 impl SixDofConstraint {
-    pub fn create(settings: &JPC_SixDOFConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &SixDofConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_SixDOFConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_SixDOFConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -334,9 +653,9 @@ impl SixDofConstraint {
 pub struct SwingTwistConstraint(pub(crate) Ref<JPC_SwingTwistConstraint>);
 
 impl SwingTwistConstraint {
-    pub fn create(settings: &JPC_SwingTwistConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &SwingTwistConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_SwingTwistConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_SwingTwistConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -356,9 +675,9 @@ impl SwingTwistConstraint {
 pub struct ConeConstraint(pub(crate) Ref<JPC_ConeConstraint>);
 
 impl ConeConstraint {
-    pub fn create(settings: &JPC_ConeConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &ConeConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_ConeConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_ConeConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -381,9 +700,9 @@ impl ConeConstraint {
 pub struct PulleyConstraint(pub(crate) Ref<JPC_PulleyConstraint>);
 
 impl PulleyConstraint {
-    pub fn create(settings: &JPC_PulleyConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &PulleyConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_PulleyConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_PulleyConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }
@@ -405,9 +724,9 @@ impl PulleyConstraint {
 pub struct PathConstraint(pub(crate) Ref<JPC_PathConstraint>);
 
 impl PathConstraint {
-    pub fn create(settings: &JPC_PathConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
+    pub fn create(settings: &PathConstraintSettings, body1: &Body<'_>, body2: &Body<'_>) -> Self {
         unsafe {
-            let raw = JPC_PathConstraintSettings_Create(settings, body1.raw(), body2.raw());
+            let raw = JPC_PathConstraintSettings_Create(&settings.0, body1.raw(), body2.raw());
             Self(Ref::from_active(raw))
         }
     }

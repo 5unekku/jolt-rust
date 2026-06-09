@@ -1,6 +1,10 @@
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, ObjectLayer, PhysicsSystem, Quat, RefConst, RVec3, Vec3};
+use crate::{
+    BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, FromJolt, IntoJolt, IntoRolt, ObjectLayer,
+    ObjectLayerFilterImpl, PhysicsSystem, Quat, RefConst, RVec3, ShapeFilterImpl, TempAllocator,
+    Vec3,
+};
 
 /// Settings for creating a [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html).
 ///
@@ -139,6 +143,53 @@ impl Default for ExtendedUpdateSettings {
     }
 }
 
+/// Arguments for [`CharacterVirtual::update`].
+pub struct CharacterUpdateArgs<'a> {
+    pub delta_time: f32,
+    pub gravity: Vec3,
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
+/// Arguments for [`CharacterVirtual::walk_stairs`].
+pub struct CharacterWalkStairsArgs<'a> {
+    pub delta_time: f32,
+    pub step_up: Vec3,
+    pub step_forward: Vec3,
+    pub step_forward_test: Vec3,
+    pub step_down_extra: Vec3,
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
+/// Arguments for [`CharacterVirtual::stick_to_floor`].
+pub struct CharacterStickToFloorArgs<'a> {
+    pub step_down: Vec3,
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
+/// Arguments for [`CharacterVirtual::extended_update`].
+pub struct CharacterExtendedUpdateArgs<'a> {
+    pub delta_time: f32,
+    pub gravity: Vec3,
+    pub settings: ExtendedUpdateSettings,
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
 /// See also: Jolt's [`CharacterVirtual`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character_virtual.html) class.
 pub struct CharacterVirtual {
     raw: *mut JPC_CharacterVirtual,
@@ -244,40 +295,66 @@ impl CharacterVirtual {
 
     // --- simulation ---
 
-    /// Basic update — moves the character and resolves collisions.
-    ///
-    /// # Safety
-    /// `temp_allocator` must be valid for the duration of the call.
-    pub unsafe fn update(&mut self, args: JPC_CharacterVirtual_UpdateArgs) {
-        let mut args = args;
-        JPC_CharacterVirtual_Update(self.raw, &mut args)
+    pub fn update(&mut self, args: CharacterUpdateArgs<'_>) {
+        let mut raw = JPC_CharacterVirtual_UpdateArgs {
+            DeltaTime: args.delta_time,
+            __bindgen_padding_0: 0,
+            Gravity: args.gravity.into_jolt(),
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_Update(self.raw, &mut raw) }
     }
 
     pub fn can_walk_stairs(&self, linear_velocity: Vec3) -> bool {
         unsafe { JPC_CharacterVirtual_CanWalkStairs(self.raw, linear_velocity.into_jolt()) }
     }
 
-    /// # Safety
-    /// `temp_allocator` must be valid.
-    pub unsafe fn walk_stairs(&mut self, args: JPC_CharacterVirtual_WalkStairsArgs) -> bool {
-        let mut args = args;
-        JPC_CharacterVirtual_WalkStairs(self.raw, &mut args)
+    pub fn walk_stairs(&mut self, args: CharacterWalkStairsArgs<'_>) -> bool {
+        let mut raw = JPC_CharacterVirtual_WalkStairsArgs {
+            DeltaTime: args.delta_time,
+            __bindgen_padding_0: 0,
+            StepUp: args.step_up.into_jolt(),
+            StepForward: args.step_forward.into_jolt(),
+            StepForwardTest: args.step_forward_test.into_jolt(),
+            StepDownExtra: args.step_down_extra.into_jolt(),
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_WalkStairs(self.raw, &mut raw) }
     }
 
-    /// # Safety
-    /// `temp_allocator` must be valid.
-    pub unsafe fn stick_to_floor(&mut self, args: JPC_CharacterVirtual_StickToFloorArgs) -> bool {
-        let mut args = args;
-        JPC_CharacterVirtual_StickToFloor(self.raw, &mut args)
+    pub fn stick_to_floor(&mut self, args: CharacterStickToFloorArgs<'_>) -> bool {
+        let mut raw = JPC_CharacterVirtual_StickToFloorArgs {
+            StepDown: args.step_down.into_jolt(),
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_StickToFloor(self.raw, &mut raw) }
     }
 
-    /// Extended update that handles stairs and floor sticking.
-    ///
-    /// # Safety
-    /// `temp_allocator` must be valid.
-    pub unsafe fn extended_update(&mut self, args: JPC_CharacterVirtual_ExtendedUpdateArgs) {
-        let mut args = args;
-        JPC_CharacterVirtual_ExtendedUpdate(self.raw, &mut args)
+    pub fn extended_update(&mut self, args: CharacterExtendedUpdateArgs<'_>) {
+        let mut raw = JPC_CharacterVirtual_ExtendedUpdateArgs {
+            DeltaTime: args.delta_time,
+            __bindgen_padding_0: 0,
+            Gravity: args.gravity.into_jolt(),
+            Settings: args.settings.0,
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_ExtendedUpdate(self.raw, &mut raw) }
     }
 
     pub fn update_ground_velocity(&mut self) {

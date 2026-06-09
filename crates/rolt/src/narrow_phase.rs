@@ -6,7 +6,8 @@ use joltc_sys::*;
 use crate::{
     BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CastShapeBase, CastShapeCollector,
     CastShapeCollectorImpl, CollideShapeBase, CollideShapeCollector, CollideShapeCollectorImpl,
-    FromJolt, IntoJolt, ObjectLayerFilterImpl, RVec3, ShapeFilterImpl, Vec3,
+    CollideShapeSettings, FromJolt, IntoJolt, ObjectLayerFilterImpl, RefConst, RVec3,
+    ShapeCastSettings, ShapeFilterImpl, Vec3,
 };
 
 /// See also: Jolt's [`NarrowPhaseQuery`](https://jrouwe.github.io/JoltPhysicsDocs/5.1.0/class_narrow_phase_query.html) class.
@@ -66,7 +67,7 @@ impl FromJolt for RayCastResult {
 }
 
 pub struct RShapeCast {
-    pub shape: *const JPC_Shape,
+    pub shape: RefConst<JPC_Shape>,
     pub scale: Vec3,
     pub center_of_mass_start: JPC_RMat44,
     pub direction: Vec3,
@@ -76,7 +77,7 @@ pub struct RShapeCast {
 pub struct CastShapeArgs<'a> {
     pub shapecast: RShapeCast,
     pub base_offset: RVec3,
-    pub settings: JPC_ShapeCastSettings,
+    pub settings: ShapeCastSettings,
     pub collector: Option<CastShapeCollectorImpl<'a>>,
     pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
     pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
@@ -125,10 +126,10 @@ impl CastShapeCollector for ClosestHitCastShapeCollector {
 }
 
 pub struct CollideShapeArgs<'a> {
-    pub shape: *const JPC_Shape,
+    pub shape: RefConst<JPC_Shape>,
     pub shape_scale: Vec3,
     pub center_of_mass_transform: JPC_RMat44,
-    pub settings: JPC_CollideShapeSettings,
+    pub settings: CollideShapeSettings,
     pub base_offset: RVec3,
     pub collector: Option<CollideShapeCollectorImpl<'a>>,
     pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
@@ -186,45 +187,47 @@ impl<'physics_system> NarrowPhaseQuery<'physics_system> {
         }
     }
 
-    pub unsafe fn cast_shape(&self, args: CastShapeArgs<'_>) {
-        let mut raw_args = JPC_NarrowPhaseQuery_CastShapeArgs {
-            ShapeCast: JPC_RShapeCast {
-                Shape: args.shapecast.shape,
-                Scale: args.shapecast.scale.into_jolt(),
-                CenterOfMassStart: args.shapecast.center_of_mass_start,
-                Direction: args.shapecast.direction.into_jolt(),
-                // const JPC_AABox ShapeWorldBounds;
+    pub fn cast_shape(&self, args: CastShapeArgs<'_>) {
+        let mut raw_args = unsafe {
+            JPC_NarrowPhaseQuery_CastShapeArgs {
+                ShapeCast: JPC_RShapeCast {
+                    Shape: args.shapecast.shape.get(),
+                    Scale: args.shapecast.scale.into_jolt(),
+                    CenterOfMassStart: args.shapecast.center_of_mass_start,
+                    Direction: args.shapecast.direction.into_jolt(),
+                    // const JPC_AABox ShapeWorldBounds;
+                    ..mem::zeroed()
+                },
+                Settings: args.settings.0,
+                BaseOffset: args.base_offset.into_jolt(),
+                Collector: args.collector.as_ref().into_jolt(),
+                BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+                ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+                BodyFilter: args.body_filter.as_ref().into_jolt(),
+                ShapeFilter: args.shape_filter.as_ref().into_jolt(),
                 ..mem::zeroed()
-            },
-            Settings: args.settings,
-            BaseOffset: args.base_offset.into_jolt(),
-            Collector: args.collector.as_ref().into_jolt(),
-            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
-            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
-            BodyFilter: args.body_filter.as_ref().into_jolt(),
-            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
-            ..mem::zeroed()
+            }
         };
-
-        JPC_NarrowPhaseQuery_CastShape(self.raw, &mut raw_args);
+        unsafe { JPC_NarrowPhaseQuery_CastShape(self.raw, &mut raw_args) };
     }
 
-    pub unsafe fn collide_shape(&self, args: CollideShapeArgs<'_>) {
-        let mut raw_args = JPC_NarrowPhaseQuery_CollideShapeArgs {
-            Shape: args.shape,
-            ShapeScale: args.shape_scale.into_jolt(),
-            CenterOfMassTransform: args.center_of_mass_transform,
-            Settings: args.settings,
-            BaseOffset: args.base_offset.into_jolt(),
-            Collector: args.collector.as_ref().into_jolt(),
-            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
-            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
-            BodyFilter: args.body_filter.as_ref().into_jolt(),
-            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
-            ..mem::zeroed()
+    pub fn collide_shape(&self, args: CollideShapeArgs<'_>) {
+        let mut raw_args = unsafe {
+            JPC_NarrowPhaseQuery_CollideShapeArgs {
+                Shape: args.shape.get(),
+                ShapeScale: args.shape_scale.into_jolt(),
+                CenterOfMassTransform: args.center_of_mass_transform,
+                Settings: args.settings.0,
+                BaseOffset: args.base_offset.into_jolt(),
+                Collector: args.collector.as_ref().into_jolt(),
+                BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+                ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+                BodyFilter: args.body_filter.as_ref().into_jolt(),
+                ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+                ..mem::zeroed()
+            }
         };
-
-        JPC_NarrowPhaseQuery_CollideShape(self.raw, &mut raw_args);
+        unsafe { JPC_NarrowPhaseQuery_CollideShape(self.raw, &mut raw_args) };
     }
 
     pub fn raw(&self) -> *const JPC_NarrowPhaseQuery {

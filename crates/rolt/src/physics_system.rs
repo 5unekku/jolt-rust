@@ -5,8 +5,8 @@ use joltc_sys::*;
 use crate::{IntoJolt, IntoRolt};
 use crate::{
     BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl, ContactListenerImpl,
-    NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
-    SimShapeFilterImpl, StateRecorder, VehicleConstraint,
+    JobSystem, NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
+    SimShapeFilterImpl, StateRecorder, TempAllocator, VehicleConstraint,
 };
 
 /// The root of everything for a physics simulation.
@@ -141,42 +141,30 @@ impl PhysicsSystem {
         ids.into_iter().map(crate::BodyId::new).collect()
     }
 
-    /// # Safety
-    ///
-    /// `temp_allocator` and `job_system` must both be valid and live for the
-    /// duration of this function.
-    pub unsafe fn update(
+    pub fn update(
         &self,
         delta_time: f32,
         collision_steps: i32,
-        temp_allocator: *mut JPC_TempAllocatorImpl,
-        job_system: *mut JPC_JobSystemThreadPool,
+        temp_allocator: &TempAllocator,
+        job_system: &dyn JobSystem,
     ) {
         unsafe {
             JPC_PhysicsSystem_Update(
                 self.raw,
                 delta_time,
                 collision_steps,
-                temp_allocator,
-                job_system.cast::<JPC_JobSystem>(),
+                temp_allocator.raw(),
+                job_system.raw_job_system(),
             );
         }
     }
 
-    /// # Safety
-    ///
-    /// `constraint` must be constraint for the duration of the call.
-    /// This function will add a new ref to the constraint's refcount and keep
-    /// it alive.
-    pub unsafe fn add_constraint(&self, constraint: *mut JPC_Constraint) {
-        unsafe { JPC_PhysicsSystem_AddConstraint(self.raw, constraint) }
+    pub fn add_constraint(&self, constraint: &crate::Constraint) {
+        unsafe { JPC_PhysicsSystem_AddConstraint(self.raw, constraint.raw()) }
     }
 
-    /// # Safety
-    ///
-    /// `constraint` must be valid for the duration of the call.
-    pub unsafe fn remove_constraint(&self, constraint: *mut JPC_Constraint) {
-        unsafe { JPC_PhysicsSystem_RemoveConstraint(self.raw, constraint) }
+    pub fn remove_constraint(&self, constraint: &crate::Constraint) {
+        unsafe { JPC_PhysicsSystem_RemoveConstraint(self.raw, constraint.raw()) }
     }
 
     /// # Safety

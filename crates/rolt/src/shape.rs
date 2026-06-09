@@ -181,26 +181,29 @@ pub fn mutable_compound_shape(sub_shapes: &[SubShape]) -> Result<crate::Ref<JPC_
     }
 }
 
-/// Returns the sub-shape pointer at `index` in a compound shape.
-/// # Safety
-/// `shape` must point to a valid `JPC_CompoundShape` (i.e. the shape was created as static or mutable compound).
-pub unsafe fn compound_sub_shape(shape: *const JPC_Shape, index: u32) -> *const JPC_Shape {
-    JPC_CompoundShape_GetSubShape_Shape(shape.cast::<JPC_CompoundShape>(), index)
+/// Returns the sub-shape at `index` in a compound shape.
+///
+/// Panics if `shape` is not a compound shape (debug builds only; UB in release without Jolt asserts).
+pub fn compound_sub_shape(shape: &RefConst<JPC_Shape>, index: u32) -> RefConst<JPC_Shape> {
+    let raw = unsafe {
+        JPC_CompoundShape_GetSubShape_Shape(shape.get().cast::<JPC_CompoundShape>(), index)
+    };
+    unsafe { RefConst::from_active(raw) }
 }
 
 /// Resolve a `SubShapeID` to its index within a compound shape, returning the remainder for nested compounds.
-/// # Safety
-/// `shape` must be a valid compound shape pointer.
-pub unsafe fn compound_sub_shape_index_from_id(
-    shape: *const JPC_Shape,
+pub fn compound_sub_shape_index_from_id(
+    shape: &RefConst<JPC_Shape>,
     sub_shape_id: JPC_SubShapeID,
 ) -> (u32, JPC_SubShapeID) {
     let mut remainder: JPC_SubShapeID = 0;
-    let index = JPC_CompoundShape_GetSubShapeIndexFromID(
-        shape.cast::<JPC_CompoundShape>(),
-        sub_shape_id,
-        &mut remainder,
-    );
+    let index = unsafe {
+        JPC_CompoundShape_GetSubShapeIndexFromID(
+            shape.get().cast::<JPC_CompoundShape>(),
+            sub_shape_id,
+            &mut remainder,
+        )
+    };
     (index, remainder)
 }
 
