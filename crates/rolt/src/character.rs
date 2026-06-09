@@ -6,6 +6,120 @@ use crate::{
     Vec3,
 };
 
+/// See also: Jolt's [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html) class.
+pub struct Character {
+    raw: *mut JPC_Character,
+}
+
+impl Character {
+    pub fn new(
+        settings: &CharacterSettings,
+        position: RVec3,
+        rotation: Quat,
+        user_data: u64,
+        physics_system: &PhysicsSystem,
+    ) -> Self {
+        let raw = unsafe {
+            JPC_Character_new(
+                &settings.raw,
+                position.into_jolt(),
+                rotation.into_jolt(),
+                user_data,
+                physics_system.raw(),
+            )
+        };
+        Self { raw }
+    }
+
+    pub fn add_to_physics_system(&mut self, activation: JPC_Activation, lock_bodies: bool) {
+        unsafe { JPC_Character_AddToPhysicsSystem(self.raw, activation, lock_bodies) }
+    }
+
+    pub fn remove_from_physics_system(&mut self, lock_bodies: bool) {
+        unsafe { JPC_Character_RemoveFromPhysicsSystem(self.raw, lock_bodies) }
+    }
+
+    pub fn activate(&mut self, lock_bodies: bool) {
+        unsafe { JPC_Character_Activate(self.raw, lock_bodies) }
+    }
+
+    pub fn post_simulation(&mut self, max_separation_distance: f32, lock_bodies: bool) {
+        unsafe { JPC_Character_PostSimulation(self.raw, max_separation_distance, lock_bodies) }
+    }
+
+    pub fn body_id(&self) -> BodyId { BodyId::new(unsafe { JPC_Character_GetBodyID(self.raw) }) }
+
+    pub fn position(&self, lock_bodies: bool) -> RVec3 {
+        unsafe { JPC_Character_GetPosition(self.raw, lock_bodies).into_rolt() }
+    }
+
+    pub fn set_position(&mut self, position: RVec3, activation: JPC_Activation, lock_bodies: bool) {
+        unsafe { JPC_Character_SetPosition(self.raw, position.into_jolt(), activation, lock_bodies) }
+    }
+
+    pub fn rotation(&self, lock_bodies: bool) -> Quat {
+        unsafe { JPC_Character_GetRotation(self.raw, lock_bodies).into_rolt() }
+    }
+
+    pub fn set_rotation(&mut self, rotation: Quat, activation: JPC_Activation, lock_bodies: bool) {
+        unsafe { JPC_Character_SetRotation(self.raw, rotation.into_jolt(), activation, lock_bodies) }
+    }
+
+    pub fn center_of_mass_position(&self, lock_bodies: bool) -> RVec3 {
+        unsafe { JPC_Character_GetCenterOfMassPosition(self.raw, lock_bodies).into_rolt() }
+    }
+
+    pub fn linear_velocity(&self, lock_bodies: bool) -> Vec3 {
+        unsafe { JPC_Character_GetLinearVelocity(self.raw, lock_bodies).into_rolt() }
+    }
+
+    pub fn set_linear_velocity(&mut self, velocity: Vec3, lock_bodies: bool) {
+        unsafe { JPC_Character_SetLinearVelocity(self.raw, velocity.into_jolt(), lock_bodies) }
+    }
+
+    pub fn add_linear_velocity(&mut self, velocity: Vec3, lock_bodies: bool) {
+        unsafe { JPC_Character_AddLinearVelocity(self.raw, velocity.into_jolt(), lock_bodies) }
+    }
+
+    pub fn ground_state(&self) -> JPC_GroundState {
+        unsafe { JPC_Character_GetGroundState(self.raw) }
+    }
+
+    pub fn is_supported(&self) -> bool { unsafe { JPC_Character_IsSupported(self.raw) } }
+    pub fn ground_position(&self) -> RVec3 { unsafe { JPC_Character_GetGroundPosition(self.raw).into_rolt() } }
+    pub fn ground_normal(&self) -> Vec3 { unsafe { JPC_Character_GetGroundNormal(self.raw).into_rolt() } }
+    pub fn ground_velocity(&self) -> Vec3 { unsafe { JPC_Character_GetGroundVelocity(self.raw).into_rolt() } }
+    pub fn ground_body_id(&self) -> BodyId { BodyId::new(unsafe { JPC_Character_GetGroundBodyID(self.raw) }) }
+    pub fn ground_user_data(&self) -> u64 { unsafe { JPC_Character_GetGroundUserData(self.raw) } }
+
+    pub fn layer(&self) -> ObjectLayer { ObjectLayer::new(unsafe { JPC_Character_GetLayer(self.raw) }) }
+
+    pub fn set_layer(&mut self, layer: ObjectLayer, lock_bodies: bool) {
+        unsafe { JPC_Character_SetLayer(self.raw, layer.raw(), lock_bodies) }
+    }
+
+    pub fn up(&self) -> Vec3 { unsafe { JPC_Character_GetUp(self.raw).into_rolt() } }
+    pub fn set_up(&mut self, up: Vec3) { unsafe { JPC_Character_SetUp(self.raw, up.into_jolt()) } }
+
+    pub fn set_shape(
+        &mut self,
+        shape: &RefConst<JPC_Shape>,
+        max_penetration_depth: f32,
+        lock_bodies: bool,
+    ) -> bool {
+        unsafe { JPC_Character_SetShape(self.raw, shape.get(), max_penetration_depth, lock_bodies) }
+    }
+
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Character) -> R) -> R { f(self.raw) }
+    pub fn raw(&self) -> *mut JPC_Character { self.raw }
+}
+
+impl Drop for Character {
+    fn drop(&mut self) {
+        unsafe { JPC_Character_delete(self.raw) }
+    }
+}
+
 /// Settings for creating a [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html).
 ///
 /// Owns the shape so the pointer inside the JPC struct is always valid.
