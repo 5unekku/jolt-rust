@@ -2,7 +2,10 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{Body, BodyId, FromJolt, IntoJolt, IntoRolt, ObjectLayer, Quat, RMat4, RefConst, RVec3, Vec3};
+use crate::{
+    Body, BodyId, BroadPhaseLayerFilterImpl, Constraint, FromJolt, IntoJolt, IntoRolt, Mat4,
+    ObjectLayer, ObjectLayerFilterImpl, Quat, RMat4, RefConst, RVec3, Vec3,
+};
 
 /// Settings used to create a physics body.
 ///
@@ -359,6 +362,131 @@ impl<'physics_system> BodyInterface<'physics_system> {
 
     pub fn invalidate_contact_cache(&self, body_id: BodyId) {
         unsafe { JPC_BodyInterface_InvalidateContactCache(self.raw, body_id.raw()) }
+    }
+
+    pub fn inverse_inertia(&self, body_id: BodyId) -> Mat4 {
+        let mut out = unsafe { std::mem::zeroed() };
+        unsafe { JPC_BodyInterface_GetInverseInertia(self.raw, body_id.raw(), &mut out) }
+        out.into_rolt()
+    }
+
+    pub fn set_use_manifold_reduction(&self, body_id: BodyId, use_reduction: bool) {
+        unsafe { JPC_BodyInterface_SetUseManifoldReduction(self.raw, body_id.raw(), use_reduction) }
+    }
+
+    pub fn use_manifold_reduction(&self, body_id: BodyId) -> bool {
+        unsafe { JPC_BodyInterface_GetUseManifoldReduction(self.raw, body_id.raw()) }
+    }
+
+    pub fn add_linear_and_angular_velocity(&self, body_id: BodyId, linear: Vec3, angular: Vec3) {
+        unsafe {
+            JPC_BodyInterface_AddLinearAndAngularVelocity(self.raw, body_id.raw(), linear.into_jolt(), angular.into_jolt())
+        }
+    }
+
+    pub fn set_position_rotation_and_velocity(&self, body_id: BodyId, position: RVec3, rotation: Quat, linear: Vec3, angular: Vec3) {
+        unsafe {
+            JPC_BodyInterface_SetPositionRotationAndVelocity(self.raw, body_id.raw(), position.into_jolt(), rotation.into_jolt(), linear.into_jolt(), angular.into_jolt())
+        }
+    }
+
+    // --- body lifecycle (extended) ---
+
+    pub fn create_body_with_id(&self, body_id: BodyId, settings: &BodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateBodyWithID(self.raw, body_id.raw(), &settings.raw) };
+        if raw.is_null() { None } else { Some(Body::new(raw)) }
+    }
+
+    pub fn create_body_without_id(&self, settings: &BodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateBodyWithoutID(self.raw, &settings.raw) };
+        if raw.is_null() { None } else { Some(Body::new(raw)) }
+    }
+
+    pub fn destroy_body_without_id(&self, body: Body<'_>) {
+        unsafe { JPC_BodyInterface_DestroyBodyWithoutID(self.raw, body.raw()) }
+        std::mem::forget(body);
+    }
+
+    /// Assign the next available ID to a body that has none. Returns `true` on success.
+    pub fn assign_body_id(&self, body: &mut Body<'_>) -> bool {
+        unsafe { JPC_BodyInterface_AssignBodyID(self.raw, body.raw()) }
+    }
+
+    pub fn unassign_body_id(&self, body_id: BodyId) -> Body<'physics_system> {
+        let raw = unsafe { JPC_BodyInterface_UnassignBodyID(self.raw, body_id.raw()) };
+        Body::new(raw)
+    }
+
+    pub fn unassign_body_ids(&self, body_ids: &[BodyId]) -> Vec<Body<'physics_system>> {
+        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        let mut out: Vec<*mut JPC_Body> = vec![std::ptr::null_mut(); ids.len()];
+        unsafe {
+            JPC_BodyInterface_UnassignBodyIDs(self.raw, ids.as_ptr(), ids.len() as i32, out.as_mut_ptr())
+        }
+        out.into_iter().map(Body::new).collect()
+    }
+
+    pub fn destroy_bodies(&self, body_ids: &[BodyId]) {
+        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_DestroyBodies(self.raw, ids.as_ptr(), ids.len() as i32) }
+    }
+
+    // --- batch add ---
+
+    /// Begin a batch-add operation. Returns an opaque state handle.
+    /// Must be followed by either `add_bodies_finalize` or `add_bodies_abort`.
+    pub fn add_bodies_prepare(&self, body_ids: &mut Vec<BodyId>) -> *mut std::ffi::c_void {
+        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_AddBodiesPrepare(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32) }
+    }
+
+    pub fn add_bodies_finalize(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void, activation: JPC_Activation) {
+        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_AddBodiesFinalize(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state, activation) }
+    }
+
+    pub fn add_bodies_abort(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void) {
+        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_AddBodiesAbort(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state) }
+    }
+
+    // --- bulk activate/deactivate/remove ---
+
+    pub fn remove_bodies(&self, body_ids: &[BodyId]) {
+        let mut ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_RemoveBodies(self.raw, ids.as_mut_ptr(), ids.len() as i32) }
+    }
+
+    pub fn activate_bodies(&self, body_ids: &[BodyId]) {
+        let mut ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_ActivateBodies(self.raw, ids.as_mut_ptr(), ids.len() as i32) }
+    }
+
+    pub fn deactivate_bodies(&self, body_ids: &[BodyId]) {
+        let mut ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
+        unsafe { JPC_BodyInterface_DeactivateBodies(self.raw, ids.as_mut_ptr(), ids.len() as i32) }
+    }
+
+    pub fn activate_constraint(&self, constraint: &Constraint) {
+        unsafe { JPC_BodyInterface_ActivateConstraint(self.raw, constraint.raw().cast::<JPC_TwoBodyConstraint>()) }
+    }
+
+    pub fn activate_bodies_in_aa_box(
+        &self,
+        box_min: Vec3,
+        box_max: Vec3,
+        broad_phase_layer_filter: &BroadPhaseLayerFilterImpl<'_>,
+        object_layer_filter: &ObjectLayerFilterImpl<'_>,
+    ) {
+        let aa_box = JPC_AABox { Min: box_min.into_jolt(), Max: box_max.into_jolt() };
+        unsafe {
+            JPC_BodyInterface_ActivateBodiesInAABox(
+                self.raw,
+                &aa_box,
+                broad_phase_layer_filter.raw(),
+                object_layer_filter.raw(),
+            )
+        }
     }
 
     // --- soft body ---
