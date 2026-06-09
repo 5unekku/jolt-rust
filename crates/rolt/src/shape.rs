@@ -2,7 +2,7 @@ use std::ffi::CStr;
 
 use joltc_sys::*;
 
-use crate::{IntoJolt, Quat, Ref, RefConst, Vec3};
+use crate::{IntoJolt, IntoRolt, Quat, Ref, RefConst, Vec3, JPC_ShapeSubType, JPC_ShapeType, JPC_SubShapeID};
 
 // helper used by all shape creators (pub(crate) so shape_settings.rs can reuse it)
 pub(crate) fn create_shape_inner(
@@ -236,4 +236,34 @@ impl MutableCompoundShape {
     pub fn as_shape(&self) -> Ref<JPC_Shape> {
         self.0.clone().cast()
     }
+}
+
+// --- shape introspection ---
+
+pub fn shape_user_data(shape: &RefConst<JPC_Shape>) -> u64 {
+    unsafe { JPC_Shape_GetUserData(shape.get()) }
+}
+
+pub fn set_shape_user_data(shape: &RefConst<JPC_Shape>, data: u64) {
+    unsafe { JPC_Shape_SetUserData(shape.get().cast_mut(), data) }
+}
+
+pub fn shape_type(shape: &RefConst<JPC_Shape>) -> JPC_ShapeType {
+    unsafe { JPC_Shape_GetType(shape.get()) }
+}
+
+pub fn shape_sub_type(shape: &RefConst<JPC_Shape>) -> JPC_ShapeSubType {
+    unsafe { JPC_Shape_GetSubType(shape.get()) }
+}
+
+pub fn shape_sub_shape_user_data(shape: &RefConst<JPC_Shape>, sub_shape_id: JPC_SubShapeID) -> u64 {
+    unsafe { JPC_Shape_GetSubShapeUserData(shape.get(), sub_shape_id) }
+}
+
+pub fn shape_center_of_mass(shape: &RefConst<JPC_Shape>) -> Vec3 {
+    unsafe { JPC_Shape_GetCenterOfMass(shape.get()).into_rolt() }
+}
+
+pub fn shape_volume(shape: &RefConst<JPC_Shape>) -> f32 {
+    unsafe { JPC_Shape_GetVolume(shape.get()) }
 }

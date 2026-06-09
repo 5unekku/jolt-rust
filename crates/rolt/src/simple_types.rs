@@ -65,6 +65,8 @@ pub use joltc_sys::{
     JPC_SOFT_BODY_CONSTRAINT_COLOR_CONSTRAINT_GROUP,
     JPC_CollisionGroup,
     JPC_SubShapeID,
+    JPC_ShapeType,
+    JPC_ShapeSubType,
 };
 
 /// Represents an object layer, which is internally either a u16 or a u32.
