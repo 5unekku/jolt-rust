@@ -1,9 +1,9 @@
 use joltc_sys::*;
 
 use crate::{
-    BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, FromJolt, IntoJolt, IntoRolt, ObjectLayer,
-    ObjectLayerFilterImpl, PhysicsSystem, Quat, RefConst, RVec3, ShapeFilterImpl, TempAllocator,
-    Vec3,
+    BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CharacterContactListenerImpl, FromJolt,
+    IntoJolt, IntoRolt, ObjectLayer, ObjectLayerFilterImpl, PhysicsSystem, Quat, RefConst, RVec3,
+    ShapeFilterImpl, TempAllocator, Vec3,
 };
 
 /// See also: Jolt's [`Character`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character.html) class.
@@ -292,6 +292,26 @@ pub struct CharacterStickToFloorArgs<'a> {
     pub temp_allocator: &'a TempAllocator,
 }
 
+/// Arguments for [`CharacterVirtual::refresh_contacts`].
+pub struct CharacterRefreshContactsArgs<'a> {
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
+/// Arguments for [`CharacterVirtual::set_shape`].
+pub struct CharacterSetShapeArgs<'a> {
+    pub shape: &'a RefConst<JPC_Shape>,
+    pub max_penetration_depth: f32,
+    pub broad_phase_layer_filter: Option<BroadPhaseLayerFilterImpl<'a>>,
+    pub object_layer_filter: Option<ObjectLayerFilterImpl<'a>>,
+    pub body_filter: Option<BodyFilterImpl<'a>>,
+    pub shape_filter: Option<ShapeFilterImpl<'a>>,
+    pub temp_allocator: &'a TempAllocator,
+}
+
 /// Arguments for [`CharacterVirtual::extended_update`].
 pub struct CharacterExtendedUpdateArgs<'a> {
     pub delta_time: f32,
@@ -473,6 +493,61 @@ impl CharacterVirtual {
 
     pub fn update_ground_velocity(&mut self) {
         unsafe { JPC_CharacterVirtual_UpdateGroundVelocity(self.raw) }
+    }
+
+    // --- phase 2 gaps ---
+
+    pub fn id(&self) -> crate::JPC_CharacterID {
+        unsafe { JPC_CharacterVirtual_GetID(self.raw) }
+    }
+
+    pub fn character_padding(&self) -> f32 {
+        unsafe { JPC_CharacterVirtual_GetCharacterPadding(self.raw) }
+    }
+
+    pub fn enhanced_internal_edge_removal(&self) -> bool {
+        unsafe { JPC_CharacterVirtual_GetEnhancedInternalEdgeRemoval(self.raw) }
+    }
+
+    pub fn set_enhanced_internal_edge_removal(&mut self, value: bool) {
+        unsafe { JPC_CharacterVirtual_SetEnhancedInternalEdgeRemoval(self.raw, value) }
+    }
+
+    pub fn hit_reduction_cos_max_angle(&self) -> f32 {
+        unsafe { JPC_CharacterVirtual_GetHitReductionCosMaxAngle(self.raw) }
+    }
+
+    pub fn set_hit_reduction_cos_max_angle(&mut self, value: f32) {
+        unsafe { JPC_CharacterVirtual_SetHitReductionCosMaxAngle(self.raw, value) }
+    }
+
+    pub fn refresh_contacts(&mut self, args: CharacterRefreshContactsArgs<'_>) {
+        let mut raw = JPC_CharacterVirtual_RefreshContactsArgs {
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_RefreshContacts(self.raw, &mut raw) }
+    }
+
+    pub fn set_shape(&mut self, args: CharacterSetShapeArgs<'_>) -> bool {
+        let mut raw = JPC_CharacterVirtual_SetShapeArgs {
+            Shape: args.shape.get(),
+            MaxPenetrationDepth: args.max_penetration_depth,
+            BroadPhaseLayerFilter: args.broad_phase_layer_filter.as_ref().into_jolt(),
+            ObjectLayerFilter: args.object_layer_filter.as_ref().into_jolt(),
+            BodyFilter: args.body_filter.as_ref().into_jolt(),
+            ShapeFilter: args.shape_filter.as_ref().into_jolt(),
+            TempAllocator: args.temp_allocator.raw(),
+        };
+        unsafe { JPC_CharacterVirtual_SetShape(self.raw, &mut raw) }
+    }
+
+    pub fn set_listener(&mut self, listener: Option<&CharacterContactListenerImpl<'_>>) {
+        let raw = listener.map_or(std::ptr::null_mut(), |l| l.raw());
+        unsafe { JPC_CharacterVirtual_SetListener(self.raw, raw) }
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_CharacterVirtual) -> R) -> R {

@@ -662,3 +662,134 @@ pub fn physics_material_debug_name(material: &crate::RefConst<JPC_PhysicsMateria
 pub fn physics_material_default() -> crate::RefConst<JPC_PhysicsMaterial> {
     unsafe { crate::RefConst::from_active(JPC_PhysicsMaterial_GetDefault()) }
 }
+
+/// See also: Jolt's [`CharacterContactListener`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character_contact_listener.html) class.
+pub trait CharacterContactListener {
+    fn on_adjust_body_velocity(
+        &self,
+        character: *const JPC_CharacterVirtual,
+        body2: *const JPC_Body,
+        linear_velocity: &mut JPC_Vec3,
+        angular_velocity: &mut JPC_Vec3,
+    );
+
+    fn on_contact_validate(
+        &self,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+    ) -> bool;
+
+    fn on_contact_added(
+        &self,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        settings: &mut JPC_CharacterContactSettings,
+    );
+
+    fn on_contact_persisted(
+        &self,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        settings: &mut JPC_CharacterContactSettings,
+    );
+
+    fn on_contact_solve(
+        &self,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        contact_velocity: JPC_Vec3,
+        contact_material: *const JPC_PhysicsMaterial,
+        character_velocity: JPC_Vec3,
+        new_character_velocity: &mut JPC_Vec3,
+    );
+}
+
+define_impl_struct!(mut CharacterContactListener {
+    OnAdjustBodyVelocity,
+    OnContactValidate,
+    OnContactAdded,
+    OnContactPersisted,
+    OnContactSolve,
+});
+
+struct CharacterContactListenerBridge<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
+    unsafe extern "C" fn OnAdjustBodyVelocity(
+        this: *mut c_void,
+        character: *const JPC_CharacterVirtual,
+        body2: *const JPC_Body,
+        linear_velocity: *mut JPC_Vec3,
+        angular_velocity: *mut JPC_Vec3,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_adjust_body_velocity(character, body2, &mut *linear_velocity, &mut *angular_velocity);
+    }
+
+    unsafe extern "C" fn OnContactValidate(
+        this: *mut c_void,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+    ) -> bool {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_contact_validate(character, body_id2, sub_shape_id2)
+    }
+
+    unsafe extern "C" fn OnContactAdded(
+        this: *mut c_void,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        settings: *mut JPC_CharacterContactSettings,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_contact_added(character, body_id2, sub_shape_id2, contact_position, contact_normal, &mut *settings);
+    }
+
+    unsafe extern "C" fn OnContactPersisted(
+        this: *mut c_void,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        settings: *mut JPC_CharacterContactSettings,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_contact_persisted(character, body_id2, sub_shape_id2, contact_position, contact_normal, &mut *settings);
+    }
+
+    unsafe extern "C" fn OnContactSolve(
+        this: *mut c_void,
+        character: *const JPC_CharacterVirtual,
+        body_id2: JPC_BodyID,
+        sub_shape_id2: JPC_SubShapeID,
+        contact_position: JPC_RVec3,
+        contact_normal: JPC_Vec3,
+        contact_velocity: JPC_Vec3,
+        contact_material: *const JPC_PhysicsMaterial,
+        character_velocity: JPC_Vec3,
+        new_character_velocity: *mut JPC_Vec3,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_contact_solve(
+            character, body_id2, sub_shape_id2, contact_position, contact_normal,
+            contact_velocity, contact_material, character_velocity, &mut *new_character_velocity,
+        );
+    }
+}

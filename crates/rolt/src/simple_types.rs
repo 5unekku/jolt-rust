@@ -67,6 +67,7 @@ pub use joltc_sys::{
     JPC_SubShapeID,
     JPC_ShapeType,
     JPC_ShapeSubType,
+    JPC_CharacterID,
 };
 
 /// Represents an object layer, which is internally either a u16 or a u32.
