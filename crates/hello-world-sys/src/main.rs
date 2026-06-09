@@ -29,6 +29,7 @@ unsafe extern "C" fn bpl_get_broad_phase_layer(
 const BPL: JPC_BroadPhaseLayerInterfaceFns = JPC_BroadPhaseLayerInterfaceFns {
     GetNumBroadPhaseLayers: Some(bpl_get_num_broad_phase_layers as _),
     GetBroadPhaseLayer: Some(bpl_get_broad_phase_layer as _),
+    GetBroadPhaseLayerName: None,
 };
 
 unsafe extern "C" fn ovb_should_collide(

@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use std::ffi::{c_uint, c_void};
+use std::ffi::{c_char, c_uint, c_void};
 use std::marker::PhantomData;
 
 use joltc_sys::*;
@@ -237,11 +237,14 @@ impl<T: GroupFilter> GroupFilterBridge<T> {
 pub trait BroadPhaseLayerInterface {
     fn get_num_broad_phase_layers(&self) -> u32;
     fn get_broad_phase_layer(&self, layer: ObjectLayer) -> BroadPhaseLayer;
+    /// Returns a debug name for the given broad phase layer. Only called when Jolt profiling is enabled.
+    fn get_broad_phase_layer_name(&self, _layer: BroadPhaseLayer) -> Option<&'static std::ffi::CStr> { None }
 }
 
 define_impl_struct!(const BroadPhaseLayerInterface {
     GetNumBroadPhaseLayers,
     GetBroadPhaseLayer,
+    GetBroadPhaseLayerName,
 });
 
 struct BroadPhaseLayerInterfaceBridge<T> {
@@ -263,6 +266,19 @@ impl<T: BroadPhaseLayerInterface> BroadPhaseLayerInterfaceBridge<T> {
         let layer = ObjectLayer::new(layer);
 
         this.get_broad_phase_layer(layer).raw()
+    }
+
+    unsafe extern "C" fn GetBroadPhaseLayerName(
+        this: *const c_void,
+        layer: JPC_BroadPhaseLayer,
+    ) -> *const c_char {
+        let this = this.cast::<T>().as_ref().unwrap();
+        let layer = BroadPhaseLayer::new(layer);
+
+        match this.get_broad_phase_layer_name(layer) {
+            None => std::ptr::null(),
+            Some(s) => s.as_ptr(),
+        }
     }
 }
 

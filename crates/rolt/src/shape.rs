@@ -237,6 +237,12 @@ impl MutableCompoundShape {
         unsafe { JPC_MutableCompoundShape_AdjustCenterOfMass(*self.0) }
     }
 
+    /// Creates a deep copy of this shape. The clone is returned as a new ref-counted owner.
+    pub fn clone_shape(&self) -> Self {
+        let raw = unsafe { JPC_MutableCompoundShape_Clone(*self.0) };
+        Self(unsafe { crate::Ref::from_addrefed(raw) })
+    }
+
     pub fn as_shape(&self) -> Ref<JPC_Shape> {
         self.0.clone().cast()
     }

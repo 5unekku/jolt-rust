@@ -521,6 +521,21 @@ impl<'physics_system> BodyInterface<'physics_system> {
         BodyId::new(unsafe { JPC_BodyInterface_CreateAndAddSoftBody(self.raw, &settings.0, activation) })
     }
 
+    /// Creates a soft body without assigning a [`BodyId`]. Pair with [`BodyInterface::assign_body_id`] then [`BodyInterface::add_body`].
+    pub fn create_soft_body_without_id(&self, settings: &crate::SoftBodyCreationSettings) -> Option<Body<'physics_system>> {
+        let raw = unsafe { JPC_BodyInterface_CreateSoftBodyWithoutID(self.raw, &settings.0) };
+        if raw.is_null() { return None; }
+        Some(Body::new(raw))
+    }
+
+    /// Returns the material of the sub-shape at `sub_shape_id`. The returned ref is valid while the body is alive.
+    pub fn get_material(&self, body_id: BodyId, sub_shape_id: JPC_SubShapeID) -> RefConst<JPC_PhysicsMaterial> {
+        unsafe {
+            let ptr = JPC_BodyInterface_GetMaterial(self.raw, body_id.raw(), sub_shape_id);
+            RefConst::from_active(ptr as *mut _)
+        }
+    }
+
     pub fn is_sensor(&self, body_id: BodyId) -> bool {
         unsafe { JPC_BodyInterface_IsSensor(self.raw, body_id.raw()) }
     }

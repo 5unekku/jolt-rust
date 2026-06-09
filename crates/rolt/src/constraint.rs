@@ -162,6 +162,13 @@ impl SixDofConstraintSettings {
     pub fn set_limit_min(&mut self, v: [f32; 6]) { self.0.LimitMin = v; }
     pub fn limit_max(&self) -> &[f32; 6] { &self.0.LimitMax }
     pub fn set_limit_max(&mut self, v: [f32; 6]) { self.0.LimitMax = v; }
+    /// Spring settings for each translation axis (indices 0=X, 1=Y, 2=Z).
+    pub fn limits_spring_settings(&self) -> &[SpringSettings; 3] {
+        unsafe { &*(&self.0.LimitsSpringSettings as *const _ as *const [SpringSettings; 3]) }
+    }
+    pub fn set_limits_spring_settings(&mut self, v: [SpringSettings; 3]) {
+        for i in 0..3 { self.0.LimitsSpringSettings[i] = v[i].0; }
+    }
 }
 
 impl Default for SixDofConstraintSettings {

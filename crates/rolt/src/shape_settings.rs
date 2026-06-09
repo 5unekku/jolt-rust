@@ -5,10 +5,10 @@ use crate::{shape::create_shape_inner, shape::SubShape, FromJolt, IntoJolt, Quat
 // --- simple shape settings (all fields directly accessible) ---
 
 /// See also: Jolt's [`BoxShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_box_shape_settings.html) class.
-pub struct BoxShapeSettings { raw: JPC_BoxShapeSettings }
+pub struct BoxShapeSettings { raw: JPC_BoxShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl BoxShapeSettings {
     pub fn new(half_extent: Vec3, convex_radius: f32) -> Self {
-        Self { raw: JPC_BoxShapeSettings { HalfExtent: half_extent.into_jolt(), ConvexRadius: convex_radius, ..Default::default() } }
+        Self { raw: JPC_BoxShapeSettings { HalfExtent: half_extent.into_jolt(), ConvexRadius: convex_radius, ..Default::default() }, material: None }
     }
     pub fn half_extent(&self) -> Vec3 { Vec3::from_jolt(self.raw.HalfExtent) }
     pub fn set_half_extent(&mut self, v: Vec3) { self.raw.HalfExtent = v.into_jolt(); }
@@ -18,19 +18,24 @@ impl BoxShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_BoxShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for BoxShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`SphereShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_sphere_shape_settings.html) class.
-pub struct SphereShapeSettings { raw: JPC_SphereShapeSettings }
+pub struct SphereShapeSettings { raw: JPC_SphereShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl SphereShapeSettings {
     pub fn new(radius: f32) -> Self {
-        Self { raw: JPC_SphereShapeSettings { Radius: radius, ..Default::default() } }
+        Self { raw: JPC_SphereShapeSettings { Radius: radius, ..Default::default() }, material: None }
     }
     pub fn radius(&self) -> f32 { self.raw.Radius }
     pub fn set_radius(&mut self, v: f32) { self.raw.Radius = v; }
@@ -38,19 +43,24 @@ impl SphereShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_SphereShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for SphereShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`CapsuleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_capsule_shape_settings.html) class.
-pub struct CapsuleShapeSettings { raw: JPC_CapsuleShapeSettings }
+pub struct CapsuleShapeSettings { raw: JPC_CapsuleShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl CapsuleShapeSettings {
     pub fn new(half_height_of_cylinder: f32, radius: f32) -> Self {
-        Self { raw: JPC_CapsuleShapeSettings { HalfHeightOfCylinder: half_height_of_cylinder, Radius: radius, ..Default::default() } }
+        Self { raw: JPC_CapsuleShapeSettings { HalfHeightOfCylinder: half_height_of_cylinder, Radius: radius, ..Default::default() }, material: None }
     }
     pub fn half_height_of_cylinder(&self) -> f32 { self.raw.HalfHeightOfCylinder }
     pub fn set_half_height_of_cylinder(&mut self, v: f32) { self.raw.HalfHeightOfCylinder = v; }
@@ -60,19 +70,24 @@ impl CapsuleShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_CapsuleShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for CapsuleShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`CylinderShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_cylinder_shape_settings.html) class.
-pub struct CylinderShapeSettings { raw: JPC_CylinderShapeSettings }
+pub struct CylinderShapeSettings { raw: JPC_CylinderShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl CylinderShapeSettings {
     pub fn new(half_height: f32, radius: f32, convex_radius: f32) -> Self {
-        Self { raw: JPC_CylinderShapeSettings { HalfHeight: half_height, Radius: radius, ConvexRadius: convex_radius, ..Default::default() } }
+        Self { raw: JPC_CylinderShapeSettings { HalfHeight: half_height, Radius: radius, ConvexRadius: convex_radius, ..Default::default() }, material: None }
     }
     pub fn half_height(&self) -> f32 { self.raw.HalfHeight }
     pub fn set_half_height(&mut self, v: f32) { self.raw.HalfHeight = v; }
@@ -84,19 +99,24 @@ impl CylinderShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_CylinderShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for CylinderShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`TriangleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_triangle_shape_settings.html) class.
-pub struct TriangleShapeSettings { raw: JPC_TriangleShapeSettings }
+pub struct TriangleShapeSettings { raw: JPC_TriangleShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl TriangleShapeSettings {
     pub fn new(v1: Vec3, v2: Vec3, v3: Vec3, convex_radius: f32) -> Self {
-        Self { raw: JPC_TriangleShapeSettings { V1: v1.into_jolt(), V2: v2.into_jolt(), V3: v3.into_jolt(), ConvexRadius: convex_radius, ..Default::default() } }
+        Self { raw: JPC_TriangleShapeSettings { V1: v1.into_jolt(), V2: v2.into_jolt(), V3: v3.into_jolt(), ConvexRadius: convex_radius, ..Default::default() }, material: None }
     }
     pub fn v1(&self) -> Vec3 { Vec3::from_jolt(self.raw.V1) }
     pub fn set_v1(&mut self, v: Vec3) { self.raw.V1 = v.into_jolt(); }
@@ -110,19 +130,24 @@ impl TriangleShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_TriangleShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for TriangleShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`PlaneShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_plane_shape_settings.html) class.
-pub struct PlaneShapeSettings { raw: JPC_PlaneShapeSettings }
+pub struct PlaneShapeSettings { raw: JPC_PlaneShapeSettings, material: Option<RefConst<JPC_PhysicsMaterial>> }
 impl PlaneShapeSettings {
     pub fn new(normal: Vec3, constant: f32, half_extent: f32) -> Self {
-        Self { raw: JPC_PlaneShapeSettings { Normal: normal.into_jolt(), Constant: constant, HalfExtent: half_extent, ..Default::default() } }
+        Self { raw: JPC_PlaneShapeSettings { Normal: normal.into_jolt(), Constant: constant, HalfExtent: half_extent, ..Default::default() }, material: None }
     }
     pub fn normal(&self) -> Vec3 { Vec3::from_jolt(self.raw.Normal) }
     pub fn set_normal(&mut self, v: Vec3) { self.raw.Normal = v.into_jolt(); }
@@ -132,12 +157,17 @@ impl PlaneShapeSettings {
     pub fn set_half_extent(&mut self, v: f32) { self.raw.HalfExtent = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         create_shape_inner(|s, e| unsafe { JPC_PlaneShapeSettings_Create(&self.raw, s, e) })
     }
 }
 impl Default for PlaneShapeSettings {
-    fn default() -> Self { Self { raw: Default::default() } }
+    fn default() -> Self { Self { raw: Default::default(), material: None } }
 }
 
 /// See also: Jolt's [`TaperedCapsuleShapeSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_tapered_capsule_shape_settings.html) class.
@@ -216,10 +246,11 @@ impl Default for EmptyShapeSettings {
 pub struct ConvexHullShapeSettings {
     raw: JPC_ConvexHullShapeSettings,
     points: Vec<JPC_Vec3>,
+    material: Option<RefConst<JPC_PhysicsMaterial>>,
 }
 impl ConvexHullShapeSettings {
     pub fn new(points: &[Vec3]) -> Self {
-        let mut this = Self { raw: Default::default(), points: points.iter().copied().map(IntoJolt::into_jolt).collect() };
+        let mut this = Self { raw: Default::default(), points: points.iter().copied().map(IntoJolt::into_jolt).collect(), material: None };
         // raw.Points/PointsLen are set in create() to avoid dangling ptrs
         this.raw.MaxConvexRadius = 0.05; // jolt default
         this
@@ -234,6 +265,11 @@ impl ConvexHullShapeSettings {
     pub fn set_density(&mut self, v: f32) { self.raw.Density = v; }
     pub fn user_data(&self) -> u64 { self.raw.UserData }
     pub fn set_user_data(&mut self, v: u64) { self.raw.UserData = v; }
+    pub fn material(&self) -> Option<&RefConst<JPC_PhysicsMaterial>> { self.material.as_ref() }
+    pub fn set_material(&mut self, material: Option<RefConst<JPC_PhysicsMaterial>>) {
+        self.raw.Material = material.as_ref().map_or(std::ptr::null(), |m| m.get());
+        self.material = material;
+    }
     pub fn create(&self) -> Result<RefConst<JPC_Shape>, String> {
         let raw = JPC_ConvexHullShapeSettings { Points: self.points.as_ptr(), PointsLen: self.points.len(), ..self.raw };
         create_shape_inner(|s, e| unsafe { JPC_ConvexHullShapeSettings_Create(&raw, s, e) })
