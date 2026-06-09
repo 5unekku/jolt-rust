@@ -4,9 +4,10 @@ use joltc_sys::*;
 
 use crate::{IntoJolt, IntoRolt};
 use crate::{
-    BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl, ContactListenerImpl,
-    JobSystem, NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
-    SimShapeFilterImpl, StateRecorder, TempAllocator, VehicleConstraint,
+    BodyDrawSettings, BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl,
+    ContactListenerImpl, DebugRendererSimpleImpl, JobSystem, NarrowPhaseQuery,
+    ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl, SimShapeFilterImpl,
+    StateRecorder, TempAllocator, VehicleConstraint,
 };
 
 /// The root of everything for a physics simulation.
@@ -167,15 +168,9 @@ impl PhysicsSystem {
         unsafe { JPC_PhysicsSystem_RemoveConstraint(self.raw, constraint.raw()) }
     }
 
-    /// # Safety
-    /// `renderer` must be valid and non-null.
-    pub unsafe fn draw_bodies(
-        &self,
-        settings: &mut JPC_BodyManager_DrawSettings,
-        renderer: *mut JPC_DebugRendererSimple,
-    ) {
+    pub fn draw_bodies(&self, settings: &mut BodyDrawSettings, renderer: &DebugRendererSimpleImpl<'_>) {
         unsafe {
-            JPC_PhysicsSystem_DrawBodies(self.raw, settings, renderer, ptr::null());
+            JPC_PhysicsSystem_DrawBodies(self.raw, &mut settings.0, renderer.raw(), ptr::null());
         }
     }
 

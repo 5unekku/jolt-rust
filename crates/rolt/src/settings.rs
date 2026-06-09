@@ -187,3 +187,66 @@ impl Default for CollideShapeSettings {
 pub fn default_physics_material() -> RefConst<JPC_PhysicsMaterial> {
     unsafe { RefConst::from_active(JPC_PhysicsMaterial_GetDefault()) }
 }
+
+// --- debug draw ---
+
+/// Controls what is drawn by [`PhysicsSystem::draw_bodies`].
+///
+/// See also: Jolt's [`BodyManager::DrawSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body_manager.html).
+#[repr(transparent)]
+pub struct BodyDrawSettings(pub JPC_BodyManager_DrawSettings);
+
+impl BodyDrawSettings {
+    pub fn draw_get_support_function(&self) -> bool { self.0.mDrawGetSupportFunction }
+    pub fn set_draw_get_support_function(&mut self, v: bool) { self.0.mDrawGetSupportFunction = v; }
+    pub fn draw_support_direction(&self) -> bool { self.0.mDrawSupportDirection }
+    pub fn set_draw_support_direction(&mut self, v: bool) { self.0.mDrawSupportDirection = v; }
+    pub fn draw_get_supporting_face(&self) -> bool { self.0.mDrawGetSupportingFace }
+    pub fn set_draw_get_supporting_face(&mut self, v: bool) { self.0.mDrawGetSupportingFace = v; }
+    pub fn draw_shape(&self) -> bool { self.0.mDrawShape }
+    pub fn set_draw_shape(&mut self, v: bool) { self.0.mDrawShape = v; }
+    pub fn draw_shape_wireframe(&self) -> bool { self.0.mDrawShapeWireframe }
+    pub fn set_draw_shape_wireframe(&mut self, v: bool) { self.0.mDrawShapeWireframe = v; }
+    pub fn draw_shape_color(&self) -> JPC_ShapeColor { self.0.mDrawShapeColor }
+    pub fn set_draw_shape_color(&mut self, v: JPC_ShapeColor) { self.0.mDrawShapeColor = v; }
+    pub fn draw_bounding_box(&self) -> bool { self.0.mDrawBoundingBox }
+    pub fn set_draw_bounding_box(&mut self, v: bool) { self.0.mDrawBoundingBox = v; }
+    pub fn draw_center_of_mass_transform(&self) -> bool { self.0.mDrawCenterOfMassTransform }
+    pub fn set_draw_center_of_mass_transform(&mut self, v: bool) { self.0.mDrawCenterOfMassTransform = v; }
+    pub fn draw_world_transform(&self) -> bool { self.0.mDrawWorldTransform }
+    pub fn set_draw_world_transform(&mut self, v: bool) { self.0.mDrawWorldTransform = v; }
+    pub fn draw_velocity(&self) -> bool { self.0.mDrawVelocity }
+    pub fn set_draw_velocity(&mut self, v: bool) { self.0.mDrawVelocity = v; }
+    pub fn draw_mass_and_inertia(&self) -> bool { self.0.mDrawMassAndInertia }
+    pub fn set_draw_mass_and_inertia(&mut self, v: bool) { self.0.mDrawMassAndInertia = v; }
+    pub fn draw_sleep_stats(&self) -> bool { self.0.mDrawSleepStats }
+    pub fn set_draw_sleep_stats(&mut self, v: bool) { self.0.mDrawSleepStats = v; }
+    pub fn draw_soft_body_vertices(&self) -> bool { self.0.mDrawSoftBodyVertices }
+    pub fn set_draw_soft_body_vertices(&mut self, v: bool) { self.0.mDrawSoftBodyVertices = v; }
+    pub fn draw_soft_body_vertex_velocities(&self) -> bool { self.0.mDrawSoftBodyVertexVelocities }
+    pub fn set_draw_soft_body_vertex_velocities(&mut self, v: bool) { self.0.mDrawSoftBodyVertexVelocities = v; }
+    pub fn draw_soft_body_edge_constraints(&self) -> bool { self.0.mDrawSoftBodyEdgeConstraints }
+    pub fn set_draw_soft_body_edge_constraints(&mut self, v: bool) { self.0.mDrawSoftBodyEdgeConstraints = v; }
+    pub fn draw_soft_body_bend_constraints(&self) -> bool { self.0.mDrawSoftBodyBendConstraints }
+    pub fn set_draw_soft_body_bend_constraints(&mut self, v: bool) { self.0.mDrawSoftBodyBendConstraints = v; }
+    pub fn draw_soft_body_volume_constraints(&self) -> bool { self.0.mDrawSoftBodyVolumeConstraints }
+    pub fn set_draw_soft_body_volume_constraints(&mut self, v: bool) { self.0.mDrawSoftBodyVolumeConstraints = v; }
+    pub fn draw_soft_body_skin_constraints(&self) -> bool { self.0.mDrawSoftBodySkinConstraints }
+    pub fn set_draw_soft_body_skin_constraints(&mut self, v: bool) { self.0.mDrawSoftBodySkinConstraints = v; }
+    pub fn draw_soft_body_lra_constraints(&self) -> bool { self.0.mDrawSoftBodyLRAConstraints }
+    pub fn set_draw_soft_body_lra_constraints(&mut self, v: bool) { self.0.mDrawSoftBodyLRAConstraints = v; }
+    pub fn draw_soft_body_rods(&self) -> bool { self.0.mDrawSoftBodyRods }
+    pub fn set_draw_soft_body_rods(&mut self, v: bool) { self.0.mDrawSoftBodyRods = v; }
+    pub fn draw_soft_body_rod_states(&self) -> bool { self.0.mDrawSoftBodyRodStates }
+    pub fn set_draw_soft_body_rod_states(&mut self, v: bool) { self.0.mDrawSoftBodyRodStates = v; }
+    pub fn draw_soft_body_rod_bend_twist_constraints(&self) -> bool { self.0.mDrawSoftBodyRodBendTwistConstraints }
+    pub fn set_draw_soft_body_rod_bend_twist_constraints(&mut self, v: bool) { self.0.mDrawSoftBodyRodBendTwistConstraints = v; }
+    pub fn draw_soft_body_predicted_bounds(&self) -> bool { self.0.mDrawSoftBodyPredictedBounds }
+    pub fn set_draw_soft_body_predicted_bounds(&mut self, v: bool) { self.0.mDrawSoftBodyPredictedBounds = v; }
+    pub fn soft_body_constraint_color(&self) -> JPC_SoftBodyConstraintColor { self.0.DrawSoftBodyConstraintColor }
+    pub fn set_soft_body_constraint_color(&mut self, v: JPC_SoftBodyConstraintColor) { self.0.DrawSoftBodyConstraintColor = v; }
+}
+
+impl Default for BodyDrawSettings {
+    fn default() -> Self { Self(unsafe { std::mem::zeroed() }) }
+}

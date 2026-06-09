@@ -7,7 +7,7 @@ use joltc_sys::*;
 use paste::paste;
 
 use crate::remote_drop::RemoteDrop;
-use crate::{Body, BodyId, BroadPhaseLayer, IntoJolt, ObjectLayer};
+use crate::{Body, BodyId, BroadPhaseLayer, Color, FromJolt, IntoJolt, ObjectLayer, RVec3};
 
 macro_rules! define_impl_struct {
     (
@@ -564,5 +564,28 @@ impl<T: CollideShapeCollector> CollideShapeCollectorBridge<T> {
         let this = this.cast::<T>().as_mut().unwrap();
 
         this.reset();
+    }
+}
+
+/// See also: Jolt's [`DebugRendererSimple`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_debug_renderer_simple.html) class.
+pub trait DebugRendererSimple {
+    fn draw_line(&self, from: RVec3, to: RVec3, color: Color);
+}
+
+define_impl_struct!(const DebugRendererSimple { DrawLine });
+
+struct DebugRendererSimpleBridge<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T: DebugRendererSimple> DebugRendererSimpleBridge<T> {
+    unsafe extern "C" fn DrawLine(
+        this: *const c_void,
+        from: JPC_RVec3,
+        to: JPC_RVec3,
+        color: JPC_Color,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.draw_line(RVec3::from_jolt(from), RVec3::from_jolt(to), Color::from_jolt(color));
     }
 }

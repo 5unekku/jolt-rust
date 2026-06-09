@@ -1,5 +1,6 @@
 use joltc_sys::*;
 
+#[allow(unused_imports)]
 // re-export commonly needed joltc_sys types so users don't need to import joltc_sys directly
 pub use joltc_sys::{
     JPC_Activation,
@@ -52,6 +53,16 @@ pub use joltc_sys::{
     JPC_VehicleTransmissionMode,
     JPC_VEHICLE_TRANSMISSION_MODE_AUTO,
     JPC_VEHICLE_TRANSMISSION_MODE_MANUAL,
+    JPC_ShapeColor,
+    JPC_SHAPE_COLOR_INSTANCE_COLOR,
+    JPC_SHAPE_COLOR_SHAPE_TYPE_COLOR,
+    JPC_SHAPE_COLOR_MOTION_TYPE_COLOR,
+    JPC_SHAPE_COLOR_SLEEP_COLOR,
+    JPC_SHAPE_COLOR_ISLAND_COLOR,
+    JPC_SHAPE_COLOR_MATERIAL_COLOR,
+    JPC_SoftBodyConstraintColor,
+    JPC_SOFT_BODY_CONSTRAINT_COLOR_CONSTRAINT_TYPE,
+    JPC_SOFT_BODY_CONSTRAINT_COLOR_CONSTRAINT_GROUP,
 };
 
 /// Represents an object layer, which is internally either a u16 or a u32.
