@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{BodyId, BroadPhaseLayer, IntoJolt, IntoRolt, ObjectLayer, RVec3, Vec3, RMat4};
+use crate::{BodyId, BroadPhaseLayer, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RVec3, Vec3, RMat4};
 
 /// See also: Jolt's [`Body`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body.html) class.
 pub struct Body<'interface> {
@@ -174,6 +174,97 @@ impl<'interface> Body<'interface> {
 
     pub fn set_enhanced_internal_edge_removal(&mut self, value: bool) {
         unsafe { JPC_Body_SetEnhancedInternalEdgeRemoval(self.inner, value) }
+    }
+
+    pub fn can_be_kinematic_or_dynamic(&self) -> bool {
+        unsafe { JPC_Body_CanBeKinematicOrDynamic(self.inner) }
+    }
+
+    pub fn collide_kinematic_vs_non_dynamic(&self) -> bool {
+        unsafe { JPC_Body_GetCollideKinematicVsNonDynamic(self.inner) }
+    }
+
+    pub fn set_collide_kinematic_vs_non_dynamic(&mut self, collide: bool) {
+        unsafe { JPC_Body_SetCollideKinematicVsNonDynamic(self.inner, collide) }
+    }
+
+    pub fn use_manifold_reduction_with_body(&self, other: &Body<'_>) -> bool {
+        unsafe { JPC_Body_GetUseManifoldReductionWithBody(self.inner, other.inner) }
+    }
+
+    pub fn enhanced_internal_edge_removal_with_body(&self, other: &Body<'_>) -> bool {
+        unsafe { JPC_Body_GetEnhancedInternalEdgeRemovalWithBody(self.inner, other.inner) }
+    }
+
+    pub fn set_linear_velocity_clamped(&mut self, velocity: Vec3) {
+        unsafe { JPC_Body_SetLinearVelocityClamped(self.inner, velocity.into_jolt()) }
+    }
+
+    pub fn set_angular_velocity_clamped(&mut self, velocity: Vec3) {
+        unsafe { JPC_Body_SetAngularVelocityClamped(self.inner, velocity.into_jolt()) }
+    }
+
+    pub fn point_velocity_com(&self, point: Vec3) -> Vec3 {
+        unsafe { JPC_Body_GetPointVelocityCOM(self.inner, point.into_jolt()).into_rolt() }
+    }
+
+    pub fn inverse_inertia(&self) -> Mat4 {
+        let mut out = unsafe { std::mem::zeroed() };
+        unsafe { JPC_Body_GetInverseInertia(self.inner, &mut out) }
+        out.into_rolt()
+    }
+
+    pub fn add_impulse_at_point(&mut self, impulse: Vec3, point: RVec3) {
+        unsafe { JPC_Body_AddImpulse2(self.inner, impulse.into_jolt(), point.into_jolt()) }
+    }
+
+    pub fn move_kinematic(&mut self, target_position: RVec3, target_rotation: Quat, delta_time: f32) {
+        unsafe { JPC_Body_MoveKinematic(self.inner, target_position.into_jolt(), target_rotation.into_jolt(), delta_time) }
+    }
+
+    pub fn apply_buoyancy_impulse(
+        &mut self,
+        surface_position: RVec3,
+        surface_normal: Vec3,
+        buoyancy: f32,
+        linear_drag: f32,
+        angular_drag: f32,
+        fluid_velocity: Vec3,
+        gravity: Vec3,
+        delta_time: f32,
+    ) -> bool {
+        unsafe {
+            JPC_Body_ApplyBuoyancyImpulse(
+                self.inner,
+                surface_position.into_jolt(),
+                surface_normal.into_jolt(),
+                buoyancy,
+                linear_drag,
+                angular_drag,
+                fluid_velocity.into_jolt(),
+                gravity.into_jolt(),
+                delta_time,
+            )
+        }
+    }
+
+    pub fn is_in_broad_phase(&self) -> bool { unsafe { JPC_Body_IsInBroadPhase(self.inner) } }
+    pub fn is_collision_cache_invalid(&self) -> bool { unsafe { JPC_Body_IsCollisionCacheInvalid(self.inner) } }
+
+    pub fn inverse_center_of_mass_transform(&self) -> RMat4 {
+        unsafe { JPC_Body_GetInverseCenterOfMassTransform(self.inner).into_rolt() }
+    }
+
+    pub fn world_space_surface_normal(&self, sub_shape_id: JPC_SubShapeID, position: RVec3) -> Vec3 {
+        unsafe { JPC_Body_GetWorldSpaceSurfaceNormal(self.inner, sub_shape_id, position.into_jolt()).into_rolt() }
+    }
+
+    pub fn collision_group(&self) -> JPC_CollisionGroup {
+        unsafe { JPC_Body_GetCollisionGroup(self.inner) }
+    }
+
+    pub fn set_collision_group(&mut self, group: &JPC_CollisionGroup) {
+        unsafe { JPC_Body_SetCollisionGroup(self.inner, group) }
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Body) -> R) -> R {
