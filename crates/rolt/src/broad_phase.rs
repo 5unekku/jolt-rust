@@ -14,7 +14,10 @@ pub struct BroadPhaseQuery<'physics_system> {
 
 impl<'physics_system> BroadPhaseQuery<'physics_system> {
     pub(crate) fn new(raw: *const JPC_BroadPhaseQuery) -> Self {
-        Self { raw, _phantom: PhantomData }
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     /// Bounding box that contains all bodies in the broad phase.
@@ -53,7 +56,10 @@ impl<'physics_system> BroadPhaseQuery<'physics_system> {
         broad_phase_layer_filter: Option<&BroadPhaseLayerFilterImpl<'_>>,
         object_layer_filter: Option<&ObjectLayerFilterImpl<'_>>,
     ) {
-        let aa_box = JPC_AABox { Min: box_min.into_jolt(), Max: box_max.into_jolt() };
+        let aa_box = JPC_AABox {
+            Min: box_min.into_jolt(),
+            Max: box_max.into_jolt(),
+        };
         unsafe {
             JPC_BroadPhaseQuery_CollideAABox(
                 self.raw,
@@ -116,7 +122,10 @@ impl<'physics_system> BroadPhaseQuery<'physics_system> {
         object_layer_filter: Option<&ObjectLayerFilterImpl<'_>>,
     ) {
         let cast = JPC_AABoxCast {
-            Box: JPC_AABox { Min: box_min.into_jolt(), Max: box_max.into_jolt() },
+            Box: JPC_AABox {
+                Min: box_min.into_jolt(),
+                Max: box_max.into_jolt(),
+            },
             Direction: direction.into_jolt(),
         };
         unsafe {
@@ -157,7 +166,9 @@ impl<'physics_system> BroadPhaseQuery<'physics_system> {
         }
     }
 
-    pub fn raw(&self) -> *const JPC_BroadPhaseQuery { self.raw }
+    pub fn raw(&self) -> *const JPC_BroadPhaseQuery {
+        self.raw
+    }
 }
 
 /// Result from a broad phase cast query (ray or box).
@@ -204,9 +215,16 @@ impl<'a> BroadPhaseCastCollector<'a> {
             AddHit: Some(cast_add_hit),
         };
         let raw = unsafe {
-            JPC_BroadPhaseCastCollector_new(bridge.as_mut() as *mut BroadPhaseCastBridge as *mut _, fns)
+            JPC_BroadPhaseCastCollector_new(
+                bridge.as_mut() as *mut BroadPhaseCastBridge as *mut _,
+                fns,
+            )
         };
-        Self { raw, bridge, _marker: PhantomData }
+        Self {
+            raw,
+            bridge,
+            _marker: PhantomData,
+        }
     }
 
     pub fn hits(&self) -> &[BroadPhaseCastResult] {
@@ -220,7 +238,9 @@ impl<'a> BroadPhaseCastCollector<'a> {
 }
 
 impl Default for BroadPhaseCastCollector<'_> {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Drop for BroadPhaseCastCollector<'_> {
@@ -258,10 +278,13 @@ impl<'a> BodyIDCollector<'a> {
             Reset: Some(body_id_reset),
             AddHit: Some(body_id_add_hit),
         };
-        let raw = unsafe {
-            JPC_BodyIDCollector_new(bridge.as_mut() as *mut BodyIDBridge as *mut _, fns)
-        };
-        Self { raw, bridge, _marker: PhantomData }
+        let raw =
+            unsafe { JPC_BodyIDCollector_new(bridge.as_mut() as *mut BodyIDBridge as *mut _, fns) };
+        Self {
+            raw,
+            bridge,
+            _marker: PhantomData,
+        }
     }
 
     pub fn hits(&self) -> &[crate::BodyId] {
@@ -274,7 +297,9 @@ impl<'a> BodyIDCollector<'a> {
 }
 
 impl Default for BodyIDCollector<'_> {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Drop for BodyIDCollector<'_> {

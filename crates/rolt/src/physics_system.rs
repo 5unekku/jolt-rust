@@ -2,13 +2,14 @@ use std::ptr;
 
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Vec3};
 use crate::{
     BodyActivationListenerImpl, BodyDrawSettings, BodyInterface, BodyLockInterface,
     BroadPhaseLayerInterfaceImpl, BroadPhaseQuery, ContactListenerImpl, DebugRendererSimpleImpl,
     JobSystem, NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
-    SimShapeFilterImpl, SoftBodyContactListenerImpl, StateRecorder, TempAllocator, VehicleConstraint,
+    SimShapeFilterImpl, SoftBodyContactListenerImpl, StateRecorder, TempAllocator,
+    VehicleConstraint,
 };
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Vec3};
 
 /// The root of everything for a physics simulation.
 ///
@@ -141,9 +142,13 @@ impl PhysicsSystem {
     /// Return all active body IDs of the given type.
     pub fn active_bodies(&self, body_type: JPC_BodyType) -> Vec<crate::BodyId> {
         let mut count = 0u32;
-        unsafe { JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ptr::null_mut(), &mut count) }
+        unsafe {
+            JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ptr::null_mut(), &mut count)
+        }
         let mut ids = vec![0u32; count as usize];
-        unsafe { JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ids.as_mut_ptr(), &mut count) }
+        unsafe {
+            JPC_PhysicsSystem_GetActiveBodies(self.raw, body_type, ids.as_mut_ptr(), &mut count)
+        }
         ids.into_iter().map(crate::BodyId::new).collect()
     }
 
@@ -173,7 +178,11 @@ impl PhysicsSystem {
         unsafe { JPC_PhysicsSystem_RemoveConstraint(self.raw, constraint.raw()) }
     }
 
-    pub fn draw_bodies(&self, settings: &mut BodyDrawSettings, renderer: &DebugRendererSimpleImpl<'_>) {
+    pub fn draw_bodies(
+        &self,
+        settings: &mut BodyDrawSettings,
+        renderer: &DebugRendererSimpleImpl<'_>,
+    ) {
         unsafe {
             JPC_PhysicsSystem_DrawBodies(self.raw, &mut settings.0, renderer.raw(), ptr::null());
         }
@@ -238,7 +247,9 @@ impl PhysicsSystem {
 
     pub fn remove_constraints(&self, constraints: &[&crate::Constraint]) {
         let mut ptrs: Vec<*mut JPC_Constraint> = constraints.iter().map(|c| c.raw()).collect();
-        unsafe { JPC_PhysicsSystem_RemoveConstraints(self.raw, ptrs.as_mut_ptr(), ptrs.len() as i32) }
+        unsafe {
+            JPC_PhysicsSystem_RemoveConstraints(self.raw, ptrs.as_mut_ptr(), ptrs.len() as i32)
+        }
     }
 
     /// Body interface without body locking — use with care in multithreaded scenarios.

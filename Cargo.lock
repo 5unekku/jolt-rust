@@ -116,9 +116,9 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.32.1"
+version = "0.33.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f70749695b063ecbf6b62949ccccde2e733ec3ecbbd71d467dca4e5c6c97cca0"
+checksum = "898f5a568a84989b6c0f8caa50a93074b97dbdc58fc6d9543157bb4562758933"
 
 [[package]]
 name = "glob"
@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "joltc-sys"
-version = "0.3.2+Jolt-5.5.0"
+version = "0.4.0+Jolt-5.5.0"
 dependencies = [
  "anyhow",
  "bindgen",
@@ -339,7 +339,7 @@ checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
 name = "rolt"
-version = "0.3.2+Jolt-5.5.0"
+version = "0.4.0+Jolt-5.5.0"
 dependencies = [
  "glam",
  "joltc-sys",

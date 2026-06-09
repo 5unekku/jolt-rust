@@ -94,9 +94,8 @@ fn build_joltc() {
              Install Emscripten and run `source emsdk_env.sh` before building.",
         );
         println!("cargo:rerun-if-env-changed=EMSDK");
-        let toolchain = format!(
-            "{emsdk}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
-        );
+        let toolchain =
+            format!("{emsdk}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake");
         config.define("CMAKE_TOOLCHAIN_FILE", &toolchain);
         // float determinism across JS engines — always on for WASM
         config.define("CROSS_PLATFORM_DETERMINISTIC", "ON");

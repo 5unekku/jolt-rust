@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, PhysicsSystem, Quat, Ref, RVec3, Vec3};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, PhysicsSystem, Quat, RVec3, Ref, Vec3};
 
 /// Settings for a ragdoll — a collection of bodies connected by constraints.
 ///
@@ -11,7 +11,9 @@ pub struct RagdollSettings {
 
 impl RagdollSettings {
     pub fn new() -> Self {
-        Self { raw: unsafe { JPC_RagdollSettings_new() } }
+        Self {
+            raw: unsafe { JPC_RagdollSettings_new() },
+        }
     }
 
     pub fn part_count(&self) -> u32 {
@@ -22,23 +24,45 @@ impl RagdollSettings {
         unsafe { JPC_RagdollSettings_AddPart(self.raw, settings) }
     }
 
-    pub fn set_part_fixed_constraint(&mut self, part_index: u32, settings: &JPC_FixedConstraintSettings) {
+    pub fn set_part_fixed_constraint(
+        &mut self,
+        part_index: u32,
+        settings: &JPC_FixedConstraintSettings,
+    ) {
         unsafe { JPC_RagdollSettings_SetPartFixedConstraint(self.raw, part_index as _, settings) }
     }
 
-    pub fn set_part_hinge_constraint(&mut self, part_index: u32, settings: &JPC_HingeConstraintSettings) {
+    pub fn set_part_hinge_constraint(
+        &mut self,
+        part_index: u32,
+        settings: &JPC_HingeConstraintSettings,
+    ) {
         unsafe { JPC_RagdollSettings_SetPartHingeConstraint(self.raw, part_index as _, settings) }
     }
 
-    pub fn set_part_slider_constraint(&mut self, part_index: u32, settings: &JPC_SliderConstraintSettings) {
+    pub fn set_part_slider_constraint(
+        &mut self,
+        part_index: u32,
+        settings: &JPC_SliderConstraintSettings,
+    ) {
         unsafe { JPC_RagdollSettings_SetPartSliderConstraint(self.raw, part_index as _, settings) }
     }
 
-    pub fn set_part_swing_twist_constraint(&mut self, part_index: u32, settings: &JPC_SwingTwistConstraintSettings) {
-        unsafe { JPC_RagdollSettings_SetPartSwingTwistConstraint(self.raw, part_index as _, settings) }
+    pub fn set_part_swing_twist_constraint(
+        &mut self,
+        part_index: u32,
+        settings: &JPC_SwingTwistConstraintSettings,
+    ) {
+        unsafe {
+            JPC_RagdollSettings_SetPartSwingTwistConstraint(self.raw, part_index as _, settings)
+        }
     }
 
-    pub fn set_part_point_constraint(&mut self, part_index: u32, settings: &JPC_PointConstraintSettings) {
+    pub fn set_part_point_constraint(
+        &mut self,
+        part_index: u32,
+        settings: &JPC_PointConstraintSettings,
+    ) {
         unsafe { JPC_RagdollSettings_SetPartPointConstraint(self.raw, part_index as _, settings) }
     }
 
@@ -49,9 +73,18 @@ impl RagdollSettings {
         physics_system: &PhysicsSystem,
     ) -> Option<Ragdoll> {
         let raw = unsafe {
-            JPC_RagdollSettings_CreateRagdoll(self.raw, collision_group, user_data, physics_system.raw())
+            JPC_RagdollSettings_CreateRagdoll(
+                self.raw,
+                collision_group,
+                user_data,
+                physics_system.raw(),
+            )
         };
-        if raw.is_null() { None } else { Some(Ragdoll { raw }) }
+        if raw.is_null() {
+            None
+        } else {
+            Some(Ragdoll { raw })
+        }
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_RagdollSettings) -> R) -> R {
@@ -140,8 +173,17 @@ impl Ragdoll {
     }
 
     /// Set joint poses (one `Mat4` per joint).
-    pub fn set_pose(&mut self, root_offset: crate::RVec3, joint_matrices: &[Mat4], lock_bodies: bool) {
-        let raw_mats: Vec<JPC_Mat44> = joint_matrices.iter().copied().map(IntoJolt::into_jolt).collect();
+    pub fn set_pose(
+        &mut self,
+        root_offset: crate::RVec3,
+        joint_matrices: &[Mat4],
+        lock_bodies: bool,
+    ) {
+        let raw_mats: Vec<JPC_Mat44> = joint_matrices
+            .iter()
+            .copied()
+            .map(IntoJolt::into_jolt)
+            .collect();
         unsafe {
             JPC_Ragdoll_SetPose(
                 self.raw,
@@ -171,8 +213,18 @@ impl Ragdoll {
     }
 
     /// Drive all joints to target poses using kinematics (moves bodies directly, bypassing constraint solving).
-    pub fn drive_to_pose_using_kinematics(&mut self, root_offset: crate::RVec3, joint_matrices: &[Mat4], delta_time: f32, lock_bodies: bool) {
-        let raw_mats: Vec<JPC_Mat44> = joint_matrices.iter().copied().map(IntoJolt::into_jolt).collect();
+    pub fn drive_to_pose_using_kinematics(
+        &mut self,
+        root_offset: crate::RVec3,
+        joint_matrices: &[Mat4],
+        delta_time: f32,
+        lock_bodies: bool,
+    ) {
+        let raw_mats: Vec<JPC_Mat44> = joint_matrices
+            .iter()
+            .copied()
+            .map(IntoJolt::into_jolt)
+            .collect();
         unsafe {
             JPC_Ragdoll_DriveToPoseUsingKinematics(
                 self.raw,
@@ -185,9 +237,19 @@ impl Ragdoll {
         }
     }
 
-    pub fn set_linear_and_angular_velocity(&mut self, linear: Vec3, angular: Vec3, lock_bodies: bool) {
+    pub fn set_linear_and_angular_velocity(
+        &mut self,
+        linear: Vec3,
+        angular: Vec3,
+        lock_bodies: bool,
+    ) {
         unsafe {
-            JPC_Ragdoll_SetLinearAndAngularVelocity(self.raw, linear.into_jolt(), angular.into_jolt(), lock_bodies)
+            JPC_Ragdoll_SetLinearAndAngularVelocity(
+                self.raw,
+                linear.into_jolt(),
+                angular.into_jolt(),
+                lock_bodies,
+            )
         }
     }
 

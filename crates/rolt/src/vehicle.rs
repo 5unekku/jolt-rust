@@ -5,47 +5,111 @@ use crate::{Body, BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, ObjectLayer, RMat4
 /// Heap-allocated wheel settings for a wheeled vehicle.
 ///
 /// See also: Jolt's [`WheelSettingsWV`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_wheel_settings_w_v.html) class.
-pub struct WheelSettingsWV { raw: *mut JPC_WheelSettingsWV }
+pub struct WheelSettingsWV {
+    raw: *mut JPC_WheelSettingsWV,
+}
 
 impl WheelSettingsWV {
-    pub fn new() -> Self { Self { raw: unsafe { JPC_WheelSettingsWV_new() } } }
+    pub fn new() -> Self {
+        Self {
+            raw: unsafe { JPC_WheelSettingsWV_new() },
+        }
+    }
 
-    pub fn position(&self) -> Vec3 { Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetPosition(self.raw) }) }
-    pub fn set_position(&mut self, v: Vec3) { unsafe { JPC_WheelSettingsWV_SetPosition(self.raw, v.into_jolt()) } }
-    pub fn suspension_direction(&self) -> Vec3 { Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetSuspensionDirection(self.raw) }) }
-    pub fn set_suspension_direction(&mut self, v: Vec3) { unsafe { JPC_WheelSettingsWV_SetSuspensionDirection(self.raw, v.into_jolt()) } }
-    pub fn steering_axis(&self) -> Vec3 { Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetSteeringAxis(self.raw) }) }
-    pub fn set_steering_axis(&mut self, v: Vec3) { unsafe { JPC_WheelSettingsWV_SetSteeringAxis(self.raw, v.into_jolt()) } }
-    pub fn wheel_up(&self) -> Vec3 { Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetWheelUp(self.raw) }) }
-    pub fn set_wheel_up(&mut self, v: Vec3) { unsafe { JPC_WheelSettingsWV_SetWheelUp(self.raw, v.into_jolt()) } }
-    pub fn wheel_forward(&self) -> Vec3 { Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetWheelForward(self.raw) }) }
-    pub fn set_wheel_forward(&mut self, v: Vec3) { unsafe { JPC_WheelSettingsWV_SetWheelForward(self.raw, v.into_jolt()) } }
-    pub fn suspension_min_length(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetSuspensionMinLength(self.raw) } }
-    pub fn set_suspension_min_length(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetSuspensionMinLength(self.raw, v) } }
-    pub fn suspension_max_length(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetSuspensionMaxLength(self.raw) } }
-    pub fn set_suspension_max_length(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetSuspensionMaxLength(self.raw, v) } }
-    pub fn suspension_preload_length(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetSuspensionPreloadLength(self.raw) } }
-    pub fn set_suspension_preload_length(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetSuspensionPreloadLength(self.raw, v) } }
-    pub fn radius(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetRadius(self.raw) } }
-    pub fn set_radius(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetRadius(self.raw, v) } }
-    pub fn width(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetWidth(self.raw) } }
-    pub fn set_width(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetWidth(self.raw, v) } }
-    pub fn max_steer_angle(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetMaxSteerAngle(self.raw) } }
-    pub fn set_max_steer_angle(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetMaxSteerAngle(self.raw, v) } }
-    pub fn max_brake_torque(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetMaxBrakeTorque(self.raw) } }
-    pub fn set_max_brake_torque(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetMaxBrakeTorque(self.raw, v) } }
-    pub fn max_hand_brake_torque(&self) -> f32 { unsafe { JPC_WheelSettingsWV_GetMaxHandBrakeTorque(self.raw) } }
-    pub fn set_max_hand_brake_torque(&mut self, v: f32) { unsafe { JPC_WheelSettingsWV_SetMaxHandBrakeTorque(self.raw, v) } }
+    pub fn position(&self) -> Vec3 {
+        Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetPosition(self.raw) })
+    }
+    pub fn set_position(&mut self, v: Vec3) {
+        unsafe { JPC_WheelSettingsWV_SetPosition(self.raw, v.into_jolt()) }
+    }
+    pub fn suspension_direction(&self) -> Vec3 {
+        Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetSuspensionDirection(self.raw) })
+    }
+    pub fn set_suspension_direction(&mut self, v: Vec3) {
+        unsafe { JPC_WheelSettingsWV_SetSuspensionDirection(self.raw, v.into_jolt()) }
+    }
+    pub fn steering_axis(&self) -> Vec3 {
+        Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetSteeringAxis(self.raw) })
+    }
+    pub fn set_steering_axis(&mut self, v: Vec3) {
+        unsafe { JPC_WheelSettingsWV_SetSteeringAxis(self.raw, v.into_jolt()) }
+    }
+    pub fn wheel_up(&self) -> Vec3 {
+        Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetWheelUp(self.raw) })
+    }
+    pub fn set_wheel_up(&mut self, v: Vec3) {
+        unsafe { JPC_WheelSettingsWV_SetWheelUp(self.raw, v.into_jolt()) }
+    }
+    pub fn wheel_forward(&self) -> Vec3 {
+        Vec3::from_jolt(unsafe { JPC_WheelSettingsWV_GetWheelForward(self.raw) })
+    }
+    pub fn set_wheel_forward(&mut self, v: Vec3) {
+        unsafe { JPC_WheelSettingsWV_SetWheelForward(self.raw, v.into_jolt()) }
+    }
+    pub fn suspension_min_length(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetSuspensionMinLength(self.raw) }
+    }
+    pub fn set_suspension_min_length(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetSuspensionMinLength(self.raw, v) }
+    }
+    pub fn suspension_max_length(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetSuspensionMaxLength(self.raw) }
+    }
+    pub fn set_suspension_max_length(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetSuspensionMaxLength(self.raw, v) }
+    }
+    pub fn suspension_preload_length(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetSuspensionPreloadLength(self.raw) }
+    }
+    pub fn set_suspension_preload_length(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetSuspensionPreloadLength(self.raw, v) }
+    }
+    pub fn radius(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetRadius(self.raw) }
+    }
+    pub fn set_radius(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetRadius(self.raw, v) }
+    }
+    pub fn width(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetWidth(self.raw) }
+    }
+    pub fn set_width(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetWidth(self.raw, v) }
+    }
+    pub fn max_steer_angle(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetMaxSteerAngle(self.raw) }
+    }
+    pub fn set_max_steer_angle(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetMaxSteerAngle(self.raw, v) }
+    }
+    pub fn max_brake_torque(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetMaxBrakeTorque(self.raw) }
+    }
+    pub fn set_max_brake_torque(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetMaxBrakeTorque(self.raw, v) }
+    }
+    pub fn max_hand_brake_torque(&self) -> f32 {
+        unsafe { JPC_WheelSettingsWV_GetMaxHandBrakeTorque(self.raw) }
+    }
+    pub fn set_max_hand_brake_torque(&mut self, v: f32) {
+        unsafe { JPC_WheelSettingsWV_SetMaxHandBrakeTorque(self.raw, v) }
+    }
 
-    pub fn raw(&self) -> *const JPC_WheelSettingsWV { self.raw }
+    pub fn raw(&self) -> *const JPC_WheelSettingsWV {
+        self.raw
+    }
 }
 
 impl Default for WheelSettingsWV {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Drop for WheelSettingsWV {
-    fn drop(&mut self) { unsafe { JPC_WheelSettingsWV_delete(self.raw) } }
+    fn drop(&mut self) {
+        unsafe { JPC_WheelSettingsWV_delete(self.raw) }
+    }
 }
 
 /// See also: Jolt's [`VehicleEngineSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_engine_settings.html) struct.
@@ -53,47 +117,101 @@ impl Drop for WheelSettingsWV {
 pub struct VehicleEngineSettings(pub JPC_VehicleEngineSettings);
 
 impl VehicleEngineSettings {
-    pub fn max_torque(&self) -> f32 { self.0.MaxTorque }
-    pub fn set_max_torque(&mut self, v: f32) { self.0.MaxTorque = v; }
-    pub fn min_rpm(&self) -> f32 { self.0.MinRPM }
-    pub fn set_min_rpm(&mut self, v: f32) { self.0.MinRPM = v; }
-    pub fn max_rpm(&self) -> f32 { self.0.MaxRPM }
-    pub fn set_max_rpm(&mut self, v: f32) { self.0.MaxRPM = v; }
-    pub fn inertia(&self) -> f32 { self.0.Inertia }
-    pub fn set_inertia(&mut self, v: f32) { self.0.Inertia = v; }
-    pub fn angular_damping(&self) -> f32 { self.0.AngularDamping }
-    pub fn set_angular_damping(&mut self, v: f32) { self.0.AngularDamping = v; }
+    pub fn max_torque(&self) -> f32 {
+        self.0.MaxTorque
+    }
+    pub fn set_max_torque(&mut self, v: f32) {
+        self.0.MaxTorque = v;
+    }
+    pub fn min_rpm(&self) -> f32 {
+        self.0.MinRPM
+    }
+    pub fn set_min_rpm(&mut self, v: f32) {
+        self.0.MinRPM = v;
+    }
+    pub fn max_rpm(&self) -> f32 {
+        self.0.MaxRPM
+    }
+    pub fn set_max_rpm(&mut self, v: f32) {
+        self.0.MaxRPM = v;
+    }
+    pub fn inertia(&self) -> f32 {
+        self.0.Inertia
+    }
+    pub fn set_inertia(&mut self, v: f32) {
+        self.0.Inertia = v;
+    }
+    pub fn angular_damping(&self) -> f32 {
+        self.0.AngularDamping
+    }
+    pub fn set_angular_damping(&mut self, v: f32) {
+        self.0.AngularDamping = v;
+    }
 }
 
 impl Default for VehicleEngineSettings {
-    fn default() -> Self { Self(JPC_VehicleEngineSettings::default()) }
+    fn default() -> Self {
+        Self(JPC_VehicleEngineSettings::default())
+    }
 }
 
 /// See also: Jolt's [`VehicleTransmissionSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_transmission_settings.html) struct.
 pub struct VehicleTransmissionSettings(pub JPC_VehicleTransmissionSettings);
 
 impl VehicleTransmissionSettings {
-    pub fn mode(&self) -> JPC_VehicleTransmissionMode { self.0.Mode }
-    pub fn set_mode(&mut self, v: JPC_VehicleTransmissionMode) { self.0.Mode = v; }
-    pub fn switch_up_rpm(&self) -> f32 { self.0.SwitchUpRPM }
-    pub fn set_switch_up_rpm(&mut self, v: f32) { self.0.SwitchUpRPM = v; }
-    pub fn switch_down_rpm(&self) -> f32 { self.0.SwitchDownRPM }
-    pub fn set_switch_down_rpm(&mut self, v: f32) { self.0.SwitchDownRPM = v; }
-    pub fn switch_time(&self) -> f32 { self.0.SwitchTime }
-    pub fn set_switch_time(&mut self, v: f32) { self.0.SwitchTime = v; }
-    pub fn clutch_release_time(&self) -> f32 { self.0.ClutchReleaseTime }
-    pub fn set_clutch_release_time(&mut self, v: f32) { self.0.ClutchReleaseTime = v; }
-    pub fn switch_latency(&self) -> f32 { self.0.SwitchLatency }
-    pub fn set_switch_latency(&mut self, v: f32) { self.0.SwitchLatency = v; }
-    pub fn clutch_strength(&self) -> f32 { self.0.ClutchStrength }
-    pub fn set_clutch_strength(&mut self, v: f32) { self.0.ClutchStrength = v; }
-    pub fn gear_ratios(&self) -> &[f32] { &self.0.GearRatios[..self.0.GearRatiosLen as usize] }
+    pub fn mode(&self) -> JPC_VehicleTransmissionMode {
+        self.0.Mode
+    }
+    pub fn set_mode(&mut self, v: JPC_VehicleTransmissionMode) {
+        self.0.Mode = v;
+    }
+    pub fn switch_up_rpm(&self) -> f32 {
+        self.0.SwitchUpRPM
+    }
+    pub fn set_switch_up_rpm(&mut self, v: f32) {
+        self.0.SwitchUpRPM = v;
+    }
+    pub fn switch_down_rpm(&self) -> f32 {
+        self.0.SwitchDownRPM
+    }
+    pub fn set_switch_down_rpm(&mut self, v: f32) {
+        self.0.SwitchDownRPM = v;
+    }
+    pub fn switch_time(&self) -> f32 {
+        self.0.SwitchTime
+    }
+    pub fn set_switch_time(&mut self, v: f32) {
+        self.0.SwitchTime = v;
+    }
+    pub fn clutch_release_time(&self) -> f32 {
+        self.0.ClutchReleaseTime
+    }
+    pub fn set_clutch_release_time(&mut self, v: f32) {
+        self.0.ClutchReleaseTime = v;
+    }
+    pub fn switch_latency(&self) -> f32 {
+        self.0.SwitchLatency
+    }
+    pub fn set_switch_latency(&mut self, v: f32) {
+        self.0.SwitchLatency = v;
+    }
+    pub fn clutch_strength(&self) -> f32 {
+        self.0.ClutchStrength
+    }
+    pub fn set_clutch_strength(&mut self, v: f32) {
+        self.0.ClutchStrength = v;
+    }
+    pub fn gear_ratios(&self) -> &[f32] {
+        &self.0.GearRatios[..self.0.GearRatiosLen as usize]
+    }
     pub fn set_gear_ratios(&mut self, ratios: &[f32]) {
         let n = ratios.len().min(self.0.GearRatios.len());
         self.0.GearRatios[..n].copy_from_slice(&ratios[..n]);
         self.0.GearRatiosLen = n as u32;
     }
-    pub fn reverse_gear_ratios(&self) -> &[f32] { &self.0.ReverseGearRatios[..self.0.ReverseGearRatiosLen as usize] }
+    pub fn reverse_gear_ratios(&self) -> &[f32] {
+        &self.0.ReverseGearRatios[..self.0.ReverseGearRatiosLen as usize]
+    }
     pub fn set_reverse_gear_ratios(&mut self, ratios: &[f32]) {
         let n = ratios.len().min(self.0.ReverseGearRatios.len());
         self.0.ReverseGearRatios[..n].copy_from_slice(&ratios[..n]);
@@ -102,7 +220,9 @@ impl VehicleTransmissionSettings {
 }
 
 impl Default for VehicleTransmissionSettings {
-    fn default() -> Self { Self(JPC_VehicleTransmissionSettings::default()) }
+    fn default() -> Self {
+        Self(JPC_VehicleTransmissionSettings::default())
+    }
 }
 
 /// See also: Jolt's [`VehicleDifferentialSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_differential_settings.html) struct.
@@ -110,22 +230,48 @@ impl Default for VehicleTransmissionSettings {
 pub struct VehicleDifferentialSettings(pub JPC_VehicleDifferentialSettings);
 
 impl VehicleDifferentialSettings {
-    pub fn left_wheel(&self) -> i32 { self.0.LeftWheel }
-    pub fn set_left_wheel(&mut self, v: i32) { self.0.LeftWheel = v; }
-    pub fn right_wheel(&self) -> i32 { self.0.RightWheel }
-    pub fn set_right_wheel(&mut self, v: i32) { self.0.RightWheel = v; }
-    pub fn differential_ratio(&self) -> f32 { self.0.DifferentialRatio }
-    pub fn set_differential_ratio(&mut self, v: f32) { self.0.DifferentialRatio = v; }
-    pub fn left_right_split(&self) -> f32 { self.0.LeftRightSplit }
-    pub fn set_left_right_split(&mut self, v: f32) { self.0.LeftRightSplit = v; }
-    pub fn limited_slip_ratio(&self) -> f32 { self.0.LimitedSlipRatio }
-    pub fn set_limited_slip_ratio(&mut self, v: f32) { self.0.LimitedSlipRatio = v; }
-    pub fn engine_torque_ratio(&self) -> f32 { self.0.EngineTorqueRatio }
-    pub fn set_engine_torque_ratio(&mut self, v: f32) { self.0.EngineTorqueRatio = v; }
+    pub fn left_wheel(&self) -> i32 {
+        self.0.LeftWheel
+    }
+    pub fn set_left_wheel(&mut self, v: i32) {
+        self.0.LeftWheel = v;
+    }
+    pub fn right_wheel(&self) -> i32 {
+        self.0.RightWheel
+    }
+    pub fn set_right_wheel(&mut self, v: i32) {
+        self.0.RightWheel = v;
+    }
+    pub fn differential_ratio(&self) -> f32 {
+        self.0.DifferentialRatio
+    }
+    pub fn set_differential_ratio(&mut self, v: f32) {
+        self.0.DifferentialRatio = v;
+    }
+    pub fn left_right_split(&self) -> f32 {
+        self.0.LeftRightSplit
+    }
+    pub fn set_left_right_split(&mut self, v: f32) {
+        self.0.LeftRightSplit = v;
+    }
+    pub fn limited_slip_ratio(&self) -> f32 {
+        self.0.LimitedSlipRatio
+    }
+    pub fn set_limited_slip_ratio(&mut self, v: f32) {
+        self.0.LimitedSlipRatio = v;
+    }
+    pub fn engine_torque_ratio(&self) -> f32 {
+        self.0.EngineTorqueRatio
+    }
+    pub fn set_engine_torque_ratio(&mut self, v: f32) {
+        self.0.EngineTorqueRatio = v;
+    }
 }
 
 impl Default for VehicleDifferentialSettings {
-    fn default() -> Self { Self(JPC_VehicleDifferentialSettings::default()) }
+    fn default() -> Self {
+        Self(JPC_VehicleDifferentialSettings::default())
+    }
 }
 
 /// See also: Jolt's [`VehicleAntiRollBar`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_vehicle_anti_roll_bar.html) struct.
@@ -134,14 +280,30 @@ pub struct VehicleAntiRollBar(pub JPC_VehicleAntiRollBar);
 
 impl VehicleAntiRollBar {
     pub fn new(left_wheel: i32, right_wheel: i32, stiffness: f32) -> Self {
-        Self(JPC_VehicleAntiRollBar { LeftWheel: left_wheel, RightWheel: right_wheel, Stiffness: stiffness })
+        Self(JPC_VehicleAntiRollBar {
+            LeftWheel: left_wheel,
+            RightWheel: right_wheel,
+            Stiffness: stiffness,
+        })
     }
-    pub fn left_wheel(&self) -> i32 { self.0.LeftWheel }
-    pub fn set_left_wheel(&mut self, v: i32) { self.0.LeftWheel = v; }
-    pub fn right_wheel(&self) -> i32 { self.0.RightWheel }
-    pub fn set_right_wheel(&mut self, v: i32) { self.0.RightWheel = v; }
-    pub fn stiffness(&self) -> f32 { self.0.Stiffness }
-    pub fn set_stiffness(&mut self, v: f32) { self.0.Stiffness = v; }
+    pub fn left_wheel(&self) -> i32 {
+        self.0.LeftWheel
+    }
+    pub fn set_left_wheel(&mut self, v: i32) {
+        self.0.LeftWheel = v;
+    }
+    pub fn right_wheel(&self) -> i32 {
+        self.0.RightWheel
+    }
+    pub fn set_right_wheel(&mut self, v: i32) {
+        self.0.RightWheel = v;
+    }
+    pub fn stiffness(&self) -> f32 {
+        self.0.Stiffness
+    }
+    pub fn set_stiffness(&mut self, v: f32) {
+        self.0.Stiffness = v;
+    }
 }
 
 /// Settings builder for a wheeled vehicle.
@@ -153,7 +315,9 @@ pub struct VehicleConstraintSettings {
 
 impl VehicleConstraintSettings {
     pub fn new() -> Self {
-        Self { raw: unsafe { JPC_VehicleConstraintSettings_new() } }
+        Self {
+            raw: unsafe { JPC_VehicleConstraintSettings_new() },
+        }
     }
 
     pub fn set_up(&mut self, up: Vec3) {
@@ -217,7 +381,9 @@ pub struct WheeledVehicleControllerSettings {
 
 impl WheeledVehicleControllerSettings {
     pub fn new() -> Self {
-        Self { raw: unsafe { JPC_WheeledVehicleControllerSettings_new() } }
+        Self {
+            raw: unsafe { JPC_WheeledVehicleControllerSettings_new() },
+        }
     }
 
     pub fn set_engine(&mut self, engine: &VehicleEngineSettings) {
@@ -232,7 +398,10 @@ impl WheeledVehicleControllerSettings {
         unsafe { JPC_WheeledVehicleControllerSettings_AddDifferential(self.raw, &differential.0) }
     }
 
-    pub fn with_raw<R>(&self, f: impl FnOnce(*const JPC_WheeledVehicleControllerSettings) -> R) -> R {
+    pub fn with_raw<R>(
+        &self,
+        f: impl FnOnce(*const JPC_WheeledVehicleControllerSettings) -> R,
+    ) -> R {
         f(self.raw)
     }
 
@@ -276,7 +445,12 @@ impl VehicleCollisionTester {
     pub fn cast_sphere(layer: ObjectLayer, radius: f32, up: Vec3, max_slope_angle: f32) -> Self {
         Self {
             raw: unsafe {
-                JPC_VehicleCollisionTesterCastSphere_new(layer.raw(), radius, up.into_jolt(), max_slope_angle)
+                JPC_VehicleCollisionTesterCastSphere_new(
+                    layer.raw(),
+                    radius,
+                    up.into_jolt(),
+                    max_slope_angle,
+                )
             },
         }
     }
@@ -317,22 +491,33 @@ pub struct WheelWV<'constraint> {
 
 impl<'constraint> WheelWV<'constraint> {
     fn new(raw: *mut JPC_WheelWV) -> Self {
-        Self { raw, _phantom: std::marker::PhantomData }
+        Self {
+            raw,
+            _phantom: std::marker::PhantomData,
+        }
     }
 
-    pub fn has_contact(&self) -> bool { unsafe { JPC_WheelWV_HasContact(self.raw) } }
+    pub fn has_contact(&self) -> bool {
+        unsafe { JPC_WheelWV_HasContact(self.raw) }
+    }
 
-    pub fn angular_velocity(&self) -> f32 { unsafe { JPC_WheelWV_GetAngularVelocity(self.raw) } }
+    pub fn angular_velocity(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetAngularVelocity(self.raw) }
+    }
     pub fn set_angular_velocity(&mut self, vel: f32) {
         unsafe { JPC_WheelWV_SetAngularVelocity(self.raw, vel) }
     }
 
-    pub fn rotation_angle(&self) -> f32 { unsafe { JPC_WheelWV_GetRotationAngle(self.raw) } }
+    pub fn rotation_angle(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetRotationAngle(self.raw) }
+    }
     pub fn set_rotation_angle(&mut self, angle: f32) {
         unsafe { JPC_WheelWV_SetRotationAngle(self.raw, angle) }
     }
 
-    pub fn steer_angle(&self) -> f32 { unsafe { JPC_WheelWV_GetSteerAngle(self.raw) } }
+    pub fn steer_angle(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetSteerAngle(self.raw) }
+    }
     pub fn set_steer_angle(&mut self, angle: f32) {
         unsafe { JPC_WheelWV_SetSteerAngle(self.raw, angle) }
     }
@@ -361,10 +546,18 @@ impl<'constraint> WheelWV<'constraint> {
         unsafe { JPC_WheelWV_GetContactLateral(self.raw).into_rolt() }
     }
 
-    pub fn suspension_length(&self) -> f32 { unsafe { JPC_WheelWV_GetSuspensionLength(self.raw) } }
-    pub fn suspension_lambda(&self) -> f32 { unsafe { JPC_WheelWV_GetSuspensionLambda(self.raw) } }
-    pub fn longitudinal_lambda(&self) -> f32 { unsafe { JPC_WheelWV_GetLongitudinalLambda(self.raw) } }
-    pub fn lateral_lambda(&self) -> f32 { unsafe { JPC_WheelWV_GetLateralLambda(self.raw) } }
+    pub fn suspension_length(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetSuspensionLength(self.raw) }
+    }
+    pub fn suspension_lambda(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetSuspensionLambda(self.raw) }
+    }
+    pub fn longitudinal_lambda(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetLongitudinalLambda(self.raw) }
+    }
+    pub fn lateral_lambda(&self) -> f32 {
+        unsafe { JPC_WheelWV_GetLateralLambda(self.raw) }
+    }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_WheelWV) -> R) -> R {
         f(self.raw)
@@ -383,29 +576,42 @@ pub struct WheeledVehicleController<'constraint> {
 
 impl<'constraint> WheeledVehicleController<'constraint> {
     fn new(raw: *mut JPC_WheeledVehicleController) -> Self {
-        Self { raw, _phantom: std::marker::PhantomData }
+        Self {
+            raw,
+            _phantom: std::marker::PhantomData,
+        }
     }
 
     pub fn set_driver_input(&mut self, forward: f32, right: f32, brake: f32, hand_brake: f32) {
-        unsafe { JPC_WheeledVehicleController_SetDriverInput(self.raw, forward, right, brake, hand_brake) }
+        unsafe {
+            JPC_WheeledVehicleController_SetDriverInput(self.raw, forward, right, brake, hand_brake)
+        }
     }
 
-    pub fn forward_input(&self) -> f32 { unsafe { JPC_WheeledVehicleController_GetForwardInput(self.raw) } }
+    pub fn forward_input(&self) -> f32 {
+        unsafe { JPC_WheeledVehicleController_GetForwardInput(self.raw) }
+    }
     pub fn set_forward_input(&mut self, v: f32) {
         unsafe { JPC_WheeledVehicleController_SetForwardInput(self.raw, v) }
     }
 
-    pub fn right_input(&self) -> f32 { unsafe { JPC_WheeledVehicleController_GetRightInput(self.raw) } }
+    pub fn right_input(&self) -> f32 {
+        unsafe { JPC_WheeledVehicleController_GetRightInput(self.raw) }
+    }
     pub fn set_right_input(&mut self, v: f32) {
         unsafe { JPC_WheeledVehicleController_SetRightInput(self.raw, v) }
     }
 
-    pub fn brake_input(&self) -> f32 { unsafe { JPC_WheeledVehicleController_GetBrakeInput(self.raw) } }
+    pub fn brake_input(&self) -> f32 {
+        unsafe { JPC_WheeledVehicleController_GetBrakeInput(self.raw) }
+    }
     pub fn set_brake_input(&mut self, v: f32) {
         unsafe { JPC_WheeledVehicleController_SetBrakeInput(self.raw, v) }
     }
 
-    pub fn hand_brake_input(&self) -> f32 { unsafe { JPC_WheeledVehicleController_GetHandBrakeInput(self.raw) } }
+    pub fn hand_brake_input(&self) -> f32 {
+        unsafe { JPC_WheeledVehicleController_GetHandBrakeInput(self.raw) }
+    }
     pub fn set_hand_brake_input(&mut self, v: f32) {
         unsafe { JPC_WheeledVehicleController_SetHandBrakeInput(self.raw, v) }
     }
@@ -435,7 +641,11 @@ impl VehicleConstraint {
 
     pub fn wheel(&mut self, index: u32) -> Option<WheelWV<'_>> {
         let ptr = unsafe { JPC_VehicleConstraint_GetWheel(self.raw, index) };
-        if ptr.is_null() { None } else { Some(WheelWV::new(ptr)) }
+        if ptr.is_null() {
+            None
+        } else {
+            Some(WheelWV::new(ptr))
+        }
     }
 
     pub fn wheeled_controller(&mut self) -> WheeledVehicleController<'_> {
@@ -445,30 +655,73 @@ impl VehicleConstraint {
 
     /// Local-space basis vectors for the given wheel.
     pub fn wheel_local_basis(&self, wheel_index: u32) -> (Vec3, Vec3, Vec3) {
-        let mut forward = JPC_Vec3 { x: 0.0, y: 0.0, z: 0.0, _w: 0.0 };
-        let mut up = JPC_Vec3 { x: 0.0, y: 0.0, z: 0.0, _w: 0.0 };
-        let mut right = JPC_Vec3 { x: 0.0, y: 0.0, z: 0.0, _w: 0.0 };
+        let mut forward = JPC_Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            _w: 0.0,
+        };
+        let mut up = JPC_Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            _w: 0.0,
+        };
+        let mut right = JPC_Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            _w: 0.0,
+        };
         unsafe {
-            JPC_VehicleConstraint_GetWheelLocalBasis(self.raw, wheel_index, &mut forward, &mut up, &mut right)
+            JPC_VehicleConstraint_GetWheelLocalBasis(
+                self.raw,
+                wheel_index,
+                &mut forward,
+                &mut up,
+                &mut right,
+            )
         }
-        (Vec3::from_jolt(forward), Vec3::from_jolt(up), Vec3::from_jolt(right))
+        (
+            Vec3::from_jolt(forward),
+            Vec3::from_jolt(up),
+            Vec3::from_jolt(right),
+        )
     }
 
     /// Local-space 4x4 transform for the given wheel.
-    pub fn wheel_local_transform(&self, wheel_index: u32, wheel_right: Vec3, wheel_up: Vec3) -> Mat4 {
+    pub fn wheel_local_transform(
+        &self,
+        wheel_index: u32,
+        wheel_right: Vec3,
+        wheel_up: Vec3,
+    ) -> Mat4 {
         unsafe {
             JPC_VehicleConstraint_GetWheelLocalTransform(
-                self.raw, wheel_index, wheel_right.into_jolt(), wheel_up.into_jolt()
-            ).into_rolt()
+                self.raw,
+                wheel_index,
+                wheel_right.into_jolt(),
+                wheel_up.into_jolt(),
+            )
+            .into_rolt()
         }
     }
 
     /// World-space 4x4 transform for the given wheel.
-    pub fn wheel_world_transform(&self, wheel_index: u32, wheel_right: Vec3, wheel_up: Vec3) -> RMat4 {
+    pub fn wheel_world_transform(
+        &self,
+        wheel_index: u32,
+        wheel_right: Vec3,
+        wheel_up: Vec3,
+    ) -> RMat4 {
         unsafe {
             JPC_VehicleConstraint_GetWheelWorldTransform(
-                self.raw, wheel_index, wheel_right.into_jolt(), wheel_up.into_jolt()
-            ).into_rolt()
+                self.raw,
+                wheel_index,
+                wheel_right.into_jolt(),
+                wheel_up.into_jolt(),
+            )
+            .into_rolt()
         }
     }
 

@@ -14,7 +14,10 @@ pub struct BodyLockInterface<'system> {
 
 impl<'system> BodyLockInterface<'system> {
     pub(crate) fn new(raw: *const JPC_BodyLockInterface) -> Self {
-        Self { raw, _phantom: PhantomData }
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     /// Acquire a read (shared) lock on a single body.
@@ -49,7 +52,10 @@ pub struct BodyLockRead<'lock> {
 impl<'lock> BodyLockRead<'lock> {
     fn new(interface: *const JPC_BodyLockInterface, body_id: BodyId) -> Self {
         let raw = unsafe { JPC_BodyLockRead_new(interface, body_id.raw()) };
-        Self { raw, _phantom: PhantomData }
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     pub fn succeeded(&self) -> bool {
@@ -63,7 +69,11 @@ impl<'lock> BodyLockRead<'lock> {
         }
         // cast_mut: we only expose &Body (immutable) while the read lock is held
         let ptr = unsafe { JPC_BodyLockRead_GetBody(self.raw) }.cast_mut();
-        if ptr.is_null() { None } else { Some(Body::new(ptr)) }
+        if ptr.is_null() {
+            None
+        } else {
+            Some(Body::new(ptr))
+        }
     }
 }
 
@@ -84,7 +94,10 @@ pub struct BodyLockWrite<'lock> {
 impl<'lock> BodyLockWrite<'lock> {
     fn new(interface: *const JPC_BodyLockInterface, body_id: BodyId) -> Self {
         let raw = unsafe { JPC_BodyLockWrite_new(interface, body_id.raw()) };
-        Self { raw, _phantom: PhantomData }
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     pub fn succeeded(&self) -> bool {
@@ -97,7 +110,11 @@ impl<'lock> BodyLockWrite<'lock> {
             return None;
         }
         let ptr = unsafe { JPC_BodyLockWrite_GetBody(self.raw) };
-        if ptr.is_null() { None } else { Some(Body::new(ptr)) }
+        if ptr.is_null() {
+            None
+        } else {
+            Some(Body::new(ptr))
+        }
     }
 }
 
@@ -118,16 +135,21 @@ pub struct BodyLockMultiRead<'lock> {
 impl<'lock> BodyLockMultiRead<'lock> {
     fn new(interface: *const JPC_BodyLockInterface, body_ids: &[BodyId]) -> Self {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|b| b.raw()).collect();
-        let raw = unsafe {
-            JPC_BodyLockMultiRead_new(interface, ids.as_ptr(), ids.len() as i32)
-        };
-        Self { raw, _phantom: PhantomData }
+        let raw = unsafe { JPC_BodyLockMultiRead_new(interface, ids.as_ptr(), ids.len() as i32) };
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     /// Returns the body at `index` into the slice passed to [`BodyLockInterface::multi_read`].
     pub fn get(&self, index: usize) -> Option<Body<'_>> {
         let ptr = unsafe { JPC_BodyLockMultiRead_GetBody(self.raw, index as i32) }.cast_mut();
-        if ptr.is_null() { None } else { Some(Body::new(ptr)) }
+        if ptr.is_null() {
+            None
+        } else {
+            Some(Body::new(ptr))
+        }
     }
 }
 
@@ -148,16 +170,21 @@ pub struct BodyLockMultiWrite<'lock> {
 impl<'lock> BodyLockMultiWrite<'lock> {
     fn new(interface: *const JPC_BodyLockInterface, body_ids: &[BodyId]) -> Self {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|b| b.raw()).collect();
-        let raw = unsafe {
-            JPC_BodyLockMultiWrite_new(interface, ids.as_ptr(), ids.len() as i32)
-        };
-        Self { raw, _phantom: PhantomData }
+        let raw = unsafe { JPC_BodyLockMultiWrite_new(interface, ids.as_ptr(), ids.len() as i32) };
+        Self {
+            raw,
+            _phantom: PhantomData,
+        }
     }
 
     /// Returns the body at `index` into the slice passed to [`BodyLockInterface::multi_write`].
     pub fn get(&mut self, index: usize) -> Option<Body<'_>> {
         let ptr = unsafe { JPC_BodyLockMultiWrite_GetBody(self.raw, index as i32) };
-        if ptr.is_null() { None } else { Some(Body::new(ptr)) }
+        if ptr.is_null() {
+            None
+        } else {
+            Some(Body::new(ptr))
+        }
     }
 }
 

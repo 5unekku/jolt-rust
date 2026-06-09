@@ -2,7 +2,10 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{BodyId, BroadPhaseLayer, FromJolt, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RefConst, RMat4, RVec3, Vec3};
+use crate::{
+    BodyId, BroadPhaseLayer, FromJolt, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RMat4, RVec3,
+    RefConst, Vec3,
+};
 
 /// See also: Jolt's [`Body`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body.html) class.
 pub struct Body<'interface> {
@@ -13,7 +16,10 @@ pub struct Body<'interface> {
 impl<'interface> Body<'interface> {
     pub(crate) fn new(inner: *mut JPC_Body) -> Self {
         assert!(!inner.is_null());
-        Self { inner, _phantom: PhantomData }
+        Self {
+            inner,
+            _phantom: PhantomData,
+        }
     }
 
     pub fn id(&self) -> BodyId {
@@ -24,15 +30,29 @@ impl<'interface> Body<'interface> {
         unsafe { JPC_Body_GetBodyType(self.inner) }
     }
 
-    pub fn is_rigid_body(&self) -> bool { unsafe { JPC_Body_IsRigidBody(self.inner) } }
-    pub fn is_soft_body(&self) -> bool { unsafe { JPC_Body_IsSoftBody(self.inner) } }
-    pub fn is_active(&self) -> bool { unsafe { JPC_Body_IsActive(self.inner) } }
-    pub fn is_static(&self) -> bool { unsafe { JPC_Body_IsStatic(self.inner) } }
-    pub fn is_kinematic(&self) -> bool { unsafe { JPC_Body_IsKinematic(self.inner) } }
-    pub fn is_dynamic(&self) -> bool { unsafe { JPC_Body_IsDynamic(self.inner) } }
+    pub fn is_rigid_body(&self) -> bool {
+        unsafe { JPC_Body_IsRigidBody(self.inner) }
+    }
+    pub fn is_soft_body(&self) -> bool {
+        unsafe { JPC_Body_IsSoftBody(self.inner) }
+    }
+    pub fn is_active(&self) -> bool {
+        unsafe { JPC_Body_IsActive(self.inner) }
+    }
+    pub fn is_static(&self) -> bool {
+        unsafe { JPC_Body_IsStatic(self.inner) }
+    }
+    pub fn is_kinematic(&self) -> bool {
+        unsafe { JPC_Body_IsKinematic(self.inner) }
+    }
+    pub fn is_dynamic(&self) -> bool {
+        unsafe { JPC_Body_IsDynamic(self.inner) }
+    }
 
     /// sensor bodies detect overlaps without applying collision forces.
-    pub fn is_sensor(&self) -> bool { unsafe { JPC_Body_IsSensor(self.inner) } }
+    pub fn is_sensor(&self) -> bool {
+        unsafe { JPC_Body_IsSensor(self.inner) }
+    }
     pub fn set_is_sensor(&mut self, sensor: bool) {
         unsafe { JPC_Body_SetIsSensor(self.inner, sensor) }
     }
@@ -54,7 +74,9 @@ impl<'interface> Body<'interface> {
     }
 
     /// whether Jolt is allowed to put this body to sleep when it stops moving.
-    pub fn allow_sleeping(&self) -> bool { unsafe { JPC_Body_GetAllowSleeping(self.inner) } }
+    pub fn allow_sleeping(&self) -> bool {
+        unsafe { JPC_Body_GetAllowSleeping(self.inner) }
+    }
     pub fn set_allow_sleeping(&mut self, allow: bool) {
         unsafe { JPC_Body_SetAllowSleeping(self.inner, allow) }
     }
@@ -64,12 +86,16 @@ impl<'interface> Body<'interface> {
         unsafe { JPC_Body_ResetSleepTimer(self.inner) }
     }
 
-    pub fn friction(&self) -> f32 { unsafe { JPC_Body_GetFriction(self.inner) } }
+    pub fn friction(&self) -> f32 {
+        unsafe { JPC_Body_GetFriction(self.inner) }
+    }
     pub fn set_friction(&mut self, friction: f32) {
         unsafe { JPC_Body_SetFriction(self.inner, friction) }
     }
 
-    pub fn restitution(&self) -> f32 { unsafe { JPC_Body_GetRestitution(self.inner) } }
+    pub fn restitution(&self) -> f32 {
+        unsafe { JPC_Body_GetRestitution(self.inner) }
+    }
     pub fn set_restitution(&mut self, restitution: f32) {
         unsafe { JPC_Body_SetRestitution(self.inner, restitution) }
     }
@@ -116,10 +142,16 @@ impl<'interface> Body<'interface> {
         unsafe { JPC_Body_GetAccumulatedTorque(self.inner).into_rolt() }
     }
 
-    pub fn reset_force(&mut self) { unsafe { JPC_Body_ResetForce(self.inner) } }
-    pub fn reset_torque(&mut self) { unsafe { JPC_Body_ResetTorque(self.inner) } }
+    pub fn reset_force(&mut self) {
+        unsafe { JPC_Body_ResetForce(self.inner) }
+    }
+    pub fn reset_torque(&mut self) {
+        unsafe { JPC_Body_ResetTorque(self.inner) }
+    }
     /// clear accumulated forces, torques, and velocities.
-    pub fn reset_motion(&mut self) { unsafe { JPC_Body_ResetMotion(self.inner) } }
+    pub fn reset_motion(&mut self) {
+        unsafe { JPC_Body_ResetMotion(self.inner) }
+    }
 
     pub fn add_impulse(&mut self, impulse: Vec3) {
         unsafe { JPC_Body_AddImpulse(self.inner, impulse.into_jolt()) }
@@ -166,7 +198,10 @@ impl<'interface> Body<'interface> {
         if raw.is_null() {
             None
         } else {
-            Some(MotionProperties { raw, _phantom: PhantomData })
+            Some(MotionProperties {
+                raw,
+                _phantom: PhantomData,
+            })
         }
     }
 
@@ -175,7 +210,9 @@ impl<'interface> Body<'interface> {
         TransformedShape::from_raw(unsafe { JPC_Body_GetTransformedShape(self.inner) })
     }
 
-    pub fn user_data(&self) -> u64 { unsafe { JPC_Body_GetUserData(self.inner) } }
+    pub fn user_data(&self) -> u64 {
+        unsafe { JPC_Body_GetUserData(self.inner) }
+    }
     pub fn set_user_data(&mut self, data: u64) {
         unsafe { JPC_Body_SetUserData(self.inner, data) }
     }
@@ -254,8 +291,20 @@ impl<'interface> Body<'interface> {
 
     /// teleport a kinematic body to the target pose over `delta_time`, computing
     /// the velocity needed to reach it in one step (used for interpolation).
-    pub fn move_kinematic(&mut self, target_position: RVec3, target_rotation: Quat, delta_time: f32) {
-        unsafe { JPC_Body_MoveKinematic(self.inner, target_position.into_jolt(), target_rotation.into_jolt(), delta_time) }
+    pub fn move_kinematic(
+        &mut self,
+        target_position: RVec3,
+        target_rotation: Quat,
+        delta_time: f32,
+    ) {
+        unsafe {
+            JPC_Body_MoveKinematic(
+                self.inner,
+                target_position.into_jolt(),
+                target_rotation.into_jolt(),
+                delta_time,
+            )
+        }
     }
 
     /// apply a buoyancy impulse for a body partially submerged in fluid.
@@ -289,17 +338,28 @@ impl<'interface> Body<'interface> {
     }
 
     /// whether the body is currently registered with the broadphase.
-    pub fn is_in_broad_phase(&self) -> bool { unsafe { JPC_Body_IsInBroadPhase(self.inner) } }
+    pub fn is_in_broad_phase(&self) -> bool {
+        unsafe { JPC_Body_IsInBroadPhase(self.inner) }
+    }
     /// `true` if the contact cache was explicitly invalidated and needs rebuilding.
-    pub fn is_collision_cache_invalid(&self) -> bool { unsafe { JPC_Body_IsCollisionCacheInvalid(self.inner) } }
+    pub fn is_collision_cache_invalid(&self) -> bool {
+        unsafe { JPC_Body_IsCollisionCacheInvalid(self.inner) }
+    }
 
     pub fn inverse_center_of_mass_transform(&self) -> RMat4 {
         unsafe { JPC_Body_GetInverseCenterOfMassTransform(self.inner).into_rolt() }
     }
 
     /// surface normal at `position` on the given sub-shape, in world space.
-    pub fn world_space_surface_normal(&self, sub_shape_id: JPC_SubShapeID, position: RVec3) -> Vec3 {
-        unsafe { JPC_Body_GetWorldSpaceSurfaceNormal(self.inner, sub_shape_id, position.into_jolt()).into_rolt() }
+    pub fn world_space_surface_normal(
+        &self,
+        sub_shape_id: JPC_SubShapeID,
+        position: RVec3,
+    ) -> Vec3 {
+        unsafe {
+            JPC_Body_GetWorldSpaceSurfaceNormal(self.inner, sub_shape_id, position.into_jolt())
+                .into_rolt()
+        }
     }
 
     pub fn collision_group(&self) -> JPC_CollisionGroup {
@@ -314,7 +374,9 @@ impl<'interface> Body<'interface> {
         f(self.inner)
     }
 
-    pub fn raw(&self) -> *mut JPC_Body { self.inner }
+    pub fn raw(&self) -> *mut JPC_Body {
+        self.inner
+    }
 }
 
 /// Borrowed handle to a body's motion properties (only valid for dynamic/kinematic bodies).

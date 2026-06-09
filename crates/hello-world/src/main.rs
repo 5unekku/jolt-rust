@@ -64,11 +64,15 @@ fn main() {
     rolt::register_types();
 
     let temp_allocator = TempAllocator::new(10 * 1024 * 1024);
-    let job_system = ThreadPoolJobSystem::new(JPC_MAX_PHYSICS_JOBS as _, JPC_MAX_PHYSICS_BARRIERS as _);
+    let job_system =
+        ThreadPoolJobSystem::new(JPC_MAX_PHYSICS_JOBS as _, JPC_MAX_PHYSICS_BARRIERS as _);
 
     let mut physics_system = rolt::PhysicsSystem::new();
     physics_system.init(
-        1024, 0, 1024, 1024,
+        1024,
+        0,
+        1024,
+        1024,
         BroadPhaseLayers,
         ObjectVsBroadPhase,
         ObjectLayerPair,
@@ -153,7 +157,6 @@ fn main() {
 
     println!("Hello, world!");
 }
-
 
 fn rvec3(x: Real, y: Real, z: Real) -> JPC_RVec3 {
     JPC_RVec3 { x, y, z, _w: z }

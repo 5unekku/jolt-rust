@@ -79,8 +79,12 @@ macro_rules! impl_constraint_ref_target {
             }
         }
         unsafe impl RefCast<JPC_Constraint> for $t {
-            fn cast(value: *const Self) -> *const JPC_Constraint { value.cast() }
-            fn cast_mut(value: *mut Self) -> *mut JPC_Constraint { value.cast() }
+            fn cast(value: *const Self) -> *const JPC_Constraint {
+                value.cast()
+            }
+            fn cast_mut(value: *mut Self) -> *mut JPC_Constraint {
+                value.cast()
+            }
         }
     };
 }
@@ -142,8 +146,12 @@ unsafe impl RefTarget for JPC_PathConstraintPathHermite {
 }
 
 unsafe impl RefCast<JPC_PathConstraintPath> for JPC_PathConstraintPathHermite {
-    fn cast(value: *const Self) -> *const JPC_PathConstraintPath { value.cast() }
-    fn cast_mut(value: *mut Self) -> *mut JPC_PathConstraintPath { value.cast() }
+    fn cast(value: *const Self) -> *const JPC_PathConstraintPath {
+        value.cast()
+    }
+    fn cast_mut(value: *mut Self) -> *mut JPC_PathConstraintPath {
+        value.cast()
+    }
 }
 
 /// Rust equivalent to Jolt's [`RefConst`](https://jrouwe.github.io/JoltPhysicsDocs/5.1.0/class_ref_const.html)

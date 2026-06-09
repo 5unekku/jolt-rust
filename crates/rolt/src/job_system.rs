@@ -96,7 +96,10 @@ impl DefaultJobSystem {
     /// `max_barriers` is silently ignored on single-threaded WASM builds.
     pub fn new(max_jobs: u32, max_barriers: u32) -> Self {
         #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-        { let _ = max_barriers; return Self(SingleThreadedJobSystem::new(max_jobs)); }
+        {
+            let _ = max_barriers;
+            return Self(SingleThreadedJobSystem::new(max_jobs));
+        }
         #[cfg(not(all(target_arch = "wasm32", not(target_feature = "atomics"))))]
         Self(ThreadPoolJobSystem::new(max_jobs, max_barriers))
     }

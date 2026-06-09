@@ -238,7 +238,12 @@ pub trait BroadPhaseLayerInterface {
     fn get_num_broad_phase_layers(&self) -> u32;
     fn get_broad_phase_layer(&self, layer: ObjectLayer) -> BroadPhaseLayer;
     /// Returns a debug name for the given broad phase layer. Only called when Jolt profiling is enabled.
-    fn get_broad_phase_layer_name(&self, _layer: BroadPhaseLayer) -> Option<&'static std::ffi::CStr> { None }
+    fn get_broad_phase_layer_name(
+        &self,
+        _layer: BroadPhaseLayer,
+    ) -> Option<&'static std::ffi::CStr> {
+        None
+    }
 }
 
 define_impl_struct!(const BroadPhaseLayerInterface {
@@ -609,7 +614,11 @@ impl<T: DebugRendererSimple> DebugRendererSimpleBridge<T> {
         color: JPC_Color,
     ) {
         let this = this.cast::<T>().as_ref().unwrap();
-        this.draw_line(RVec3::from_jolt(from), RVec3::from_jolt(to), Color::from_jolt(color));
+        this.draw_line(
+            RVec3::from_jolt(from),
+            RVec3::from_jolt(to),
+            Color::from_jolt(color),
+        );
     }
 }
 
@@ -652,12 +661,18 @@ impl PhysicsMaterialImpl<'static> {
         let this = Box::into_raw(Box::new(value));
         let raw = unsafe { JPC_PhysicsMaterial_new(this.cast::<c_void>(), fns) };
         let remote_this = unsafe { RemoteDrop::new(this) };
-        Self { raw, remote_this: Some(remote_this), _marker: PhantomData }
+        Self {
+            raw,
+            remote_this: Some(remote_this),
+            _marker: PhantomData,
+        }
     }
 }
 
 impl<'a> PhysicsMaterialImpl<'a> {
-    pub fn raw(&self) -> *mut JPC_PhysicsMaterial { self.raw }
+    pub fn raw(&self) -> *mut JPC_PhysicsMaterial {
+        self.raw
+    }
 }
 
 impl<'a> Drop for PhysicsMaterialImpl<'a> {
@@ -667,7 +682,9 @@ impl<'a> Drop for PhysicsMaterialImpl<'a> {
 }
 
 impl<T: PhysicsMaterial + 'static> From<T> for PhysicsMaterialImpl<'static> {
-    fn from(value: T) -> Self { Self::new(value) }
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
 }
 
 /// Get the debug name of a pre-existing physics material (e.g. from a shape).
@@ -758,7 +775,12 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
         angular_velocity: *mut JPC_Vec3,
     ) {
         let this = this.cast::<T>().as_ref().unwrap();
-        this.on_adjust_body_velocity(character, body2, &mut *linear_velocity, &mut *angular_velocity);
+        this.on_adjust_body_velocity(
+            character,
+            body2,
+            &mut *linear_velocity,
+            &mut *angular_velocity,
+        );
     }
 
     unsafe extern "C" fn OnContactValidate(
@@ -781,7 +803,14 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
         settings: *mut JPC_CharacterContactSettings,
     ) {
         let this = this.cast::<T>().as_ref().unwrap();
-        this.on_contact_added(character, body_id2, sub_shape_id2, contact_position, contact_normal, &mut *settings);
+        this.on_contact_added(
+            character,
+            body_id2,
+            sub_shape_id2,
+            contact_position,
+            contact_normal,
+            &mut *settings,
+        );
     }
 
     unsafe extern "C" fn OnContactPersisted(
@@ -794,7 +823,14 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
         settings: *mut JPC_CharacterContactSettings,
     ) {
         let this = this.cast::<T>().as_ref().unwrap();
-        this.on_contact_persisted(character, body_id2, sub_shape_id2, contact_position, contact_normal, &mut *settings);
+        this.on_contact_persisted(
+            character,
+            body_id2,
+            sub_shape_id2,
+            contact_position,
+            contact_normal,
+            &mut *settings,
+        );
     }
 
     unsafe extern "C" fn OnContactSolve(
@@ -811,8 +847,15 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
     ) {
         let this = this.cast::<T>().as_ref().unwrap();
         this.on_contact_solve(
-            character, body_id2, sub_shape_id2, contact_position, contact_normal,
-            contact_velocity, contact_material, character_velocity, &mut *new_character_velocity,
+            character,
+            body_id2,
+            sub_shape_id2,
+            contact_position,
+            contact_normal,
+            contact_velocity,
+            contact_material,
+            character_velocity,
+            &mut *new_character_velocity,
         );
     }
 }
@@ -826,14 +869,30 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
 pub struct SoftBodyContactSettings(pub JPC_SoftBodyContactSettings);
 
 impl SoftBodyContactSettings {
-    pub fn inv_mass_scale1(&self) -> f32 { self.0.InvMassScale1 }
-    pub fn set_inv_mass_scale1(&mut self, v: f32) { self.0.InvMassScale1 = v; }
-    pub fn inv_mass_scale2(&self) -> f32 { self.0.InvMassScale2 }
-    pub fn set_inv_mass_scale2(&mut self, v: f32) { self.0.InvMassScale2 = v; }
-    pub fn inv_inertia_scale2(&self) -> f32 { self.0.InvInertiaScale2 }
-    pub fn set_inv_inertia_scale2(&mut self, v: f32) { self.0.InvInertiaScale2 = v; }
-    pub fn is_sensor(&self) -> bool { self.0.IsSensor }
-    pub fn set_is_sensor(&mut self, v: bool) { self.0.IsSensor = v; }
+    pub fn inv_mass_scale1(&self) -> f32 {
+        self.0.InvMassScale1
+    }
+    pub fn set_inv_mass_scale1(&mut self, v: f32) {
+        self.0.InvMassScale1 = v;
+    }
+    pub fn inv_mass_scale2(&self) -> f32 {
+        self.0.InvMassScale2
+    }
+    pub fn set_inv_mass_scale2(&mut self, v: f32) {
+        self.0.InvMassScale2 = v;
+    }
+    pub fn inv_inertia_scale2(&self) -> f32 {
+        self.0.InvInertiaScale2
+    }
+    pub fn set_inv_inertia_scale2(&mut self, v: f32) {
+        self.0.InvInertiaScale2 = v;
+    }
+    pub fn is_sensor(&self) -> bool {
+        self.0.IsSensor
+    }
+    pub fn set_is_sensor(&mut self, v: bool) {
+        self.0.IsSensor = v;
+    }
 }
 
 /// Opaque handle to a soft body manifold — use accessors to inspect contacts.
@@ -871,11 +930,7 @@ pub trait SoftBodyContactListener {
     ) -> JPC_ValidateResult;
 
     /// called after the contact manifold has been finalized.
-    fn on_soft_body_contact_added(
-        &self,
-        soft_body: &crate::Body<'_>,
-        manifold: &SoftBodyManifold,
-    );
+    fn on_soft_body_contact_added(&self, soft_body: &crate::Body<'_>, manifold: &SoftBodyManifold);
 }
 
 define_impl_struct!(mut SoftBodyContactListener {
@@ -936,12 +991,20 @@ struct BodyActivationListenerBridge<T> {
 }
 
 impl<T: BodyActivationListener> BodyActivationListenerBridge<T> {
-    unsafe extern "C" fn OnBodyActivated(this: *mut c_void, body_id: JPC_BodyID, body_user_data: u64) {
+    unsafe extern "C" fn OnBodyActivated(
+        this: *mut c_void,
+        body_id: JPC_BodyID,
+        body_user_data: u64,
+    ) {
         let this = this.cast::<T>().as_ref().unwrap();
         this.on_body_activated(BodyId::new(body_id), body_user_data);
     }
 
-    unsafe extern "C" fn OnBodyDeactivated(this: *mut c_void, body_id: JPC_BodyID, body_user_data: u64) {
+    unsafe extern "C" fn OnBodyDeactivated(
+        this: *mut c_void,
+        body_id: JPC_BodyID,
+        body_user_data: u64,
+    ) {
         let this = this.cast::<T>().as_ref().unwrap();
         this.on_body_deactivated(BodyId::new(body_id), body_user_data);
     }

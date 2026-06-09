@@ -9,7 +9,9 @@ pub struct StateRecorder {
 
 impl StateRecorder {
     pub fn new() -> Self {
-        Self { raw: unsafe { JPC_StateRecorder_new() } }
+        Self {
+            raw: unsafe { JPC_StateRecorder_new() },
+        }
     }
 
     /// Clear all recorded state.

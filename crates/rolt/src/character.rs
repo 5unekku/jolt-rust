@@ -2,7 +2,7 @@ use joltc_sys::*;
 
 use crate::{
     BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CharacterContactListenerImpl, FromJolt,
-    IntoJolt, IntoRolt, ObjectLayer, ObjectLayerFilterImpl, PhysicsSystem, Quat, RefConst, RVec3,
+    IntoJolt, IntoRolt, ObjectLayer, ObjectLayerFilterImpl, PhysicsSystem, Quat, RVec3, RefConst,
     ShapeFilterImpl, TempAllocator, Vec3,
 };
 
@@ -47,14 +47,18 @@ impl Character {
         unsafe { JPC_Character_PostSimulation(self.raw, max_separation_distance, lock_bodies) }
     }
 
-    pub fn body_id(&self) -> BodyId { BodyId::new(unsafe { JPC_Character_GetBodyID(self.raw) }) }
+    pub fn body_id(&self) -> BodyId {
+        BodyId::new(unsafe { JPC_Character_GetBodyID(self.raw) })
+    }
 
     pub fn position(&self, lock_bodies: bool) -> RVec3 {
         unsafe { JPC_Character_GetPosition(self.raw, lock_bodies).into_rolt() }
     }
 
     pub fn set_position(&mut self, position: RVec3, activation: JPC_Activation, lock_bodies: bool) {
-        unsafe { JPC_Character_SetPosition(self.raw, position.into_jolt(), activation, lock_bodies) }
+        unsafe {
+            JPC_Character_SetPosition(self.raw, position.into_jolt(), activation, lock_bodies)
+        }
     }
 
     pub fn rotation(&self, lock_bodies: bool) -> Quat {
@@ -62,7 +66,9 @@ impl Character {
     }
 
     pub fn set_rotation(&mut self, rotation: Quat, activation: JPC_Activation, lock_bodies: bool) {
-        unsafe { JPC_Character_SetRotation(self.raw, rotation.into_jolt(), activation, lock_bodies) }
+        unsafe {
+            JPC_Character_SetRotation(self.raw, rotation.into_jolt(), activation, lock_bodies)
+        }
     }
 
     pub fn center_of_mass_position(&self, lock_bodies: bool) -> RVec3 {
@@ -85,21 +91,39 @@ impl Character {
         unsafe { JPC_Character_GetGroundState(self.raw) }
     }
 
-    pub fn is_supported(&self) -> bool { unsafe { JPC_Character_IsSupported(self.raw) } }
-    pub fn ground_position(&self) -> RVec3 { unsafe { JPC_Character_GetGroundPosition(self.raw).into_rolt() } }
-    pub fn ground_normal(&self) -> Vec3 { unsafe { JPC_Character_GetGroundNormal(self.raw).into_rolt() } }
-    pub fn ground_velocity(&self) -> Vec3 { unsafe { JPC_Character_GetGroundVelocity(self.raw).into_rolt() } }
-    pub fn ground_body_id(&self) -> BodyId { BodyId::new(unsafe { JPC_Character_GetGroundBodyID(self.raw) }) }
-    pub fn ground_user_data(&self) -> u64 { unsafe { JPC_Character_GetGroundUserData(self.raw) } }
+    pub fn is_supported(&self) -> bool {
+        unsafe { JPC_Character_IsSupported(self.raw) }
+    }
+    pub fn ground_position(&self) -> RVec3 {
+        unsafe { JPC_Character_GetGroundPosition(self.raw).into_rolt() }
+    }
+    pub fn ground_normal(&self) -> Vec3 {
+        unsafe { JPC_Character_GetGroundNormal(self.raw).into_rolt() }
+    }
+    pub fn ground_velocity(&self) -> Vec3 {
+        unsafe { JPC_Character_GetGroundVelocity(self.raw).into_rolt() }
+    }
+    pub fn ground_body_id(&self) -> BodyId {
+        BodyId::new(unsafe { JPC_Character_GetGroundBodyID(self.raw) })
+    }
+    pub fn ground_user_data(&self) -> u64 {
+        unsafe { JPC_Character_GetGroundUserData(self.raw) }
+    }
 
-    pub fn layer(&self) -> ObjectLayer { ObjectLayer::new(unsafe { JPC_Character_GetLayer(self.raw) }) }
+    pub fn layer(&self) -> ObjectLayer {
+        ObjectLayer::new(unsafe { JPC_Character_GetLayer(self.raw) })
+    }
 
     pub fn set_layer(&mut self, layer: ObjectLayer, lock_bodies: bool) {
         unsafe { JPC_Character_SetLayer(self.raw, layer.raw(), lock_bodies) }
     }
 
-    pub fn up(&self) -> Vec3 { unsafe { JPC_Character_GetUp(self.raw).into_rolt() } }
-    pub fn set_up(&mut self, up: Vec3) { unsafe { JPC_Character_SetUp(self.raw, up.into_jolt()) } }
+    pub fn up(&self) -> Vec3 {
+        unsafe { JPC_Character_GetUp(self.raw).into_rolt() }
+    }
+    pub fn set_up(&mut self, up: Vec3) {
+        unsafe { JPC_Character_SetUp(self.raw, up.into_jolt()) }
+    }
 
     pub fn set_shape(
         &mut self,
@@ -117,13 +141,30 @@ impl Character {
     pub fn position_and_rotation(&self, lock_bodies: bool) -> (RVec3, Quat) {
         let mut position = unsafe { std::mem::zeroed::<JPC_RVec3>() };
         let mut rotation = unsafe { std::mem::zeroed::<JPC_Quat>() };
-        unsafe { JPC_Character_GetPositionAndRotation(self.raw, &mut position, &mut rotation, lock_bodies) }
+        unsafe {
+            JPC_Character_GetPositionAndRotation(
+                self.raw,
+                &mut position,
+                &mut rotation,
+                lock_bodies,
+            )
+        }
         (position.into_rolt(), rotation.into_rolt())
     }
 
-    pub fn set_linear_and_angular_velocity(&mut self, linear: Vec3, angular: Vec3, lock_bodies: bool) {
+    pub fn set_linear_and_angular_velocity(
+        &mut self,
+        linear: Vec3,
+        angular: Vec3,
+        lock_bodies: bool,
+    ) {
         unsafe {
-            JPC_Character_SetLinearAndAngularVelocity(self.raw, linear.into_jolt(), angular.into_jolt(), lock_bodies)
+            JPC_Character_SetLinearAndAngularVelocity(
+                self.raw,
+                linear.into_jolt(),
+                angular.into_jolt(),
+                lock_bodies,
+            )
         }
     }
 
@@ -131,8 +172,12 @@ impl Character {
         unsafe { JPC_Character_GetWorldTransform(self.raw, lock_bodies) }
     }
 
-    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Character) -> R) -> R { f(self.raw) }
-    pub fn raw(&self) -> *mut JPC_Character { self.raw }
+    pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Character) -> R) -> R {
+        f(self.raw)
+    }
+    pub fn raw(&self) -> *mut JPC_Character {
+        self.raw
+    }
 }
 
 impl Drop for Character {
@@ -151,27 +196,62 @@ pub struct CharacterSettings {
 
 impl CharacterSettings {
     pub fn new(shape: &RefConst<JPC_Shape>, layer: ObjectLayer) -> Self {
-        let mut this = Self { raw: Default::default(), _shape: Some(shape.clone()) };
+        let mut this = Self {
+            raw: Default::default(),
+            _shape: Some(shape.clone()),
+        };
         this.raw.Shape = shape.get();
         this.raw.Layer = layer.raw();
         this
     }
-    pub fn up(&self) -> Vec3 { Vec3::from_jolt(self.raw.Up) }
-    pub fn set_up(&mut self, v: Vec3) { self.raw.Up = v.into_jolt(); }
-    pub fn max_slope_angle(&self) -> f32 { self.raw.MaxSlopeAngle }
-    pub fn set_max_slope_angle(&mut self, v: f32) { self.raw.MaxSlopeAngle = v; }
-    pub fn enhanced_internal_edge_removal(&self) -> bool { self.raw.EnhancedInternalEdgeRemoval }
-    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) { self.raw.EnhancedInternalEdgeRemoval = v; }
-    pub fn layer(&self) -> ObjectLayer { ObjectLayer::new(self.raw.Layer) }
-    pub fn set_layer(&mut self, v: ObjectLayer) { self.raw.Layer = v.raw(); }
-    pub fn mass(&self) -> f32 { self.raw.Mass }
-    pub fn set_mass(&mut self, v: f32) { self.raw.Mass = v; }
-    pub fn friction(&self) -> f32 { self.raw.Friction }
-    pub fn set_friction(&mut self, v: f32) { self.raw.Friction = v; }
-    pub fn gravity_factor(&self) -> f32 { self.raw.GravityFactor }
-    pub fn set_gravity_factor(&mut self, v: f32) { self.raw.GravityFactor = v; }
-    pub fn allowed_dofs(&self) -> JPC_AllowedDOFs { self.raw.AllowedDOFs }
-    pub fn set_allowed_dofs(&mut self, v: JPC_AllowedDOFs) { self.raw.AllowedDOFs = v; }
+    pub fn up(&self) -> Vec3 {
+        Vec3::from_jolt(self.raw.Up)
+    }
+    pub fn set_up(&mut self, v: Vec3) {
+        self.raw.Up = v.into_jolt();
+    }
+    pub fn max_slope_angle(&self) -> f32 {
+        self.raw.MaxSlopeAngle
+    }
+    pub fn set_max_slope_angle(&mut self, v: f32) {
+        self.raw.MaxSlopeAngle = v;
+    }
+    pub fn enhanced_internal_edge_removal(&self) -> bool {
+        self.raw.EnhancedInternalEdgeRemoval
+    }
+    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) {
+        self.raw.EnhancedInternalEdgeRemoval = v;
+    }
+    pub fn layer(&self) -> ObjectLayer {
+        ObjectLayer::new(self.raw.Layer)
+    }
+    pub fn set_layer(&mut self, v: ObjectLayer) {
+        self.raw.Layer = v.raw();
+    }
+    pub fn mass(&self) -> f32 {
+        self.raw.Mass
+    }
+    pub fn set_mass(&mut self, v: f32) {
+        self.raw.Mass = v;
+    }
+    pub fn friction(&self) -> f32 {
+        self.raw.Friction
+    }
+    pub fn set_friction(&mut self, v: f32) {
+        self.raw.Friction = v;
+    }
+    pub fn gravity_factor(&self) -> f32 {
+        self.raw.GravityFactor
+    }
+    pub fn set_gravity_factor(&mut self, v: f32) {
+        self.raw.GravityFactor = v;
+    }
+    pub fn allowed_dofs(&self) -> JPC_AllowedDOFs {
+        self.raw.AllowedDOFs
+    }
+    pub fn set_allowed_dofs(&mut self, v: JPC_AllowedDOFs) {
+        self.raw.AllowedDOFs = v;
+    }
     pub fn set_shape(&mut self, shape: &RefConst<JPC_Shape>) {
         self._shape = Some(shape.clone());
         self.raw.Shape = shape.get();
@@ -179,7 +259,12 @@ impl CharacterSettings {
 }
 
 impl Default for CharacterSettings {
-    fn default() -> Self { Self { raw: Default::default(), _shape: None } }
+    fn default() -> Self {
+        Self {
+            raw: Default::default(),
+            _shape: None,
+        }
+    }
 }
 
 /// Settings for creating a [`CharacterVirtual`].
@@ -193,44 +278,116 @@ pub struct CharacterVirtualSettings {
 
 impl CharacterVirtualSettings {
     pub fn new(shape: &RefConst<JPC_Shape>) -> Self {
-        let mut this = Self { raw: Default::default(), _shape: Some(shape.clone()), _inner_body_shape: None };
+        let mut this = Self {
+            raw: Default::default(),
+            _shape: Some(shape.clone()),
+            _inner_body_shape: None,
+        };
         this.raw.Shape = shape.get();
         this
     }
-    pub fn up(&self) -> Vec3 { Vec3::from_jolt(self.raw.Up) }
-    pub fn set_up(&mut self, v: Vec3) { self.raw.Up = v.into_jolt(); }
-    pub fn max_slope_angle(&self) -> f32 { self.raw.MaxSlopeAngle }
-    pub fn set_max_slope_angle(&mut self, v: f32) { self.raw.MaxSlopeAngle = v; }
-    pub fn enhanced_internal_edge_removal(&self) -> bool { self.raw.EnhancedInternalEdgeRemoval }
-    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) { self.raw.EnhancedInternalEdgeRemoval = v; }
-    pub fn mass(&self) -> f32 { self.raw.Mass }
-    pub fn set_mass(&mut self, v: f32) { self.raw.Mass = v; }
-    pub fn max_strength(&self) -> f32 { self.raw.MaxStrength }
-    pub fn set_max_strength(&mut self, v: f32) { self.raw.MaxStrength = v; }
-    pub fn shape_offset(&self) -> Vec3 { Vec3::from_jolt(self.raw.ShapeOffset) }
-    pub fn set_shape_offset(&mut self, v: Vec3) { self.raw.ShapeOffset = v.into_jolt(); }
-    pub fn back_face_mode(&self) -> JPC_BackFaceMode { self.raw.BackFaceMode }
-    pub fn set_back_face_mode(&mut self, v: JPC_BackFaceMode) { self.raw.BackFaceMode = v; }
-    pub fn predictive_contact_distance(&self) -> f32 { self.raw.PredictiveContactDistance }
-    pub fn set_predictive_contact_distance(&mut self, v: f32) { self.raw.PredictiveContactDistance = v; }
-    pub fn max_collision_iterations(&self) -> u32 { self.raw.MaxCollisionIterations }
-    pub fn set_max_collision_iterations(&mut self, v: u32) { self.raw.MaxCollisionIterations = v; }
-    pub fn max_constraint_iterations(&self) -> u32 { self.raw.MaxConstraintIterations }
-    pub fn set_max_constraint_iterations(&mut self, v: u32) { self.raw.MaxConstraintIterations = v; }
-    pub fn min_time_remaining(&self) -> f32 { self.raw.MinTimeRemaining }
-    pub fn set_min_time_remaining(&mut self, v: f32) { self.raw.MinTimeRemaining = v; }
-    pub fn collision_tolerance(&self) -> f32 { self.raw.CollisionTolerance }
-    pub fn set_collision_tolerance(&mut self, v: f32) { self.raw.CollisionTolerance = v; }
-    pub fn character_padding(&self) -> f32 { self.raw.CharacterPadding }
-    pub fn set_character_padding(&mut self, v: f32) { self.raw.CharacterPadding = v; }
-    pub fn max_num_hits(&self) -> u32 { self.raw.MaxNumHits }
-    pub fn set_max_num_hits(&mut self, v: u32) { self.raw.MaxNumHits = v; }
-    pub fn hit_reduction_cos_max_angle(&self) -> f32 { self.raw.HitReductionCosMaxAngle }
-    pub fn set_hit_reduction_cos_max_angle(&mut self, v: f32) { self.raw.HitReductionCosMaxAngle = v; }
-    pub fn penetration_recovery_speed(&self) -> f32 { self.raw.PenetrationRecoverySpeed }
-    pub fn set_penetration_recovery_speed(&mut self, v: f32) { self.raw.PenetrationRecoverySpeed = v; }
-    pub fn inner_body_layer(&self) -> ObjectLayer { ObjectLayer::new(self.raw.InnerBodyLayer) }
-    pub fn set_inner_body_layer(&mut self, v: ObjectLayer) { self.raw.InnerBodyLayer = v.raw(); }
+    pub fn up(&self) -> Vec3 {
+        Vec3::from_jolt(self.raw.Up)
+    }
+    pub fn set_up(&mut self, v: Vec3) {
+        self.raw.Up = v.into_jolt();
+    }
+    pub fn max_slope_angle(&self) -> f32 {
+        self.raw.MaxSlopeAngle
+    }
+    pub fn set_max_slope_angle(&mut self, v: f32) {
+        self.raw.MaxSlopeAngle = v;
+    }
+    pub fn enhanced_internal_edge_removal(&self) -> bool {
+        self.raw.EnhancedInternalEdgeRemoval
+    }
+    pub fn set_enhanced_internal_edge_removal(&mut self, v: bool) {
+        self.raw.EnhancedInternalEdgeRemoval = v;
+    }
+    pub fn mass(&self) -> f32 {
+        self.raw.Mass
+    }
+    pub fn set_mass(&mut self, v: f32) {
+        self.raw.Mass = v;
+    }
+    pub fn max_strength(&self) -> f32 {
+        self.raw.MaxStrength
+    }
+    pub fn set_max_strength(&mut self, v: f32) {
+        self.raw.MaxStrength = v;
+    }
+    pub fn shape_offset(&self) -> Vec3 {
+        Vec3::from_jolt(self.raw.ShapeOffset)
+    }
+    pub fn set_shape_offset(&mut self, v: Vec3) {
+        self.raw.ShapeOffset = v.into_jolt();
+    }
+    pub fn back_face_mode(&self) -> JPC_BackFaceMode {
+        self.raw.BackFaceMode
+    }
+    pub fn set_back_face_mode(&mut self, v: JPC_BackFaceMode) {
+        self.raw.BackFaceMode = v;
+    }
+    pub fn predictive_contact_distance(&self) -> f32 {
+        self.raw.PredictiveContactDistance
+    }
+    pub fn set_predictive_contact_distance(&mut self, v: f32) {
+        self.raw.PredictiveContactDistance = v;
+    }
+    pub fn max_collision_iterations(&self) -> u32 {
+        self.raw.MaxCollisionIterations
+    }
+    pub fn set_max_collision_iterations(&mut self, v: u32) {
+        self.raw.MaxCollisionIterations = v;
+    }
+    pub fn max_constraint_iterations(&self) -> u32 {
+        self.raw.MaxConstraintIterations
+    }
+    pub fn set_max_constraint_iterations(&mut self, v: u32) {
+        self.raw.MaxConstraintIterations = v;
+    }
+    pub fn min_time_remaining(&self) -> f32 {
+        self.raw.MinTimeRemaining
+    }
+    pub fn set_min_time_remaining(&mut self, v: f32) {
+        self.raw.MinTimeRemaining = v;
+    }
+    pub fn collision_tolerance(&self) -> f32 {
+        self.raw.CollisionTolerance
+    }
+    pub fn set_collision_tolerance(&mut self, v: f32) {
+        self.raw.CollisionTolerance = v;
+    }
+    pub fn character_padding(&self) -> f32 {
+        self.raw.CharacterPadding
+    }
+    pub fn set_character_padding(&mut self, v: f32) {
+        self.raw.CharacterPadding = v;
+    }
+    pub fn max_num_hits(&self) -> u32 {
+        self.raw.MaxNumHits
+    }
+    pub fn set_max_num_hits(&mut self, v: u32) {
+        self.raw.MaxNumHits = v;
+    }
+    pub fn hit_reduction_cos_max_angle(&self) -> f32 {
+        self.raw.HitReductionCosMaxAngle
+    }
+    pub fn set_hit_reduction_cos_max_angle(&mut self, v: f32) {
+        self.raw.HitReductionCosMaxAngle = v;
+    }
+    pub fn penetration_recovery_speed(&self) -> f32 {
+        self.raw.PenetrationRecoverySpeed
+    }
+    pub fn set_penetration_recovery_speed(&mut self, v: f32) {
+        self.raw.PenetrationRecoverySpeed = v;
+    }
+    pub fn inner_body_layer(&self) -> ObjectLayer {
+        ObjectLayer::new(self.raw.InnerBodyLayer)
+    }
+    pub fn set_inner_body_layer(&mut self, v: ObjectLayer) {
+        self.raw.InnerBodyLayer = v.raw();
+    }
     pub fn set_shape(&mut self, shape: &RefConst<JPC_Shape>) {
         self._shape = Some(shape.clone());
         self.raw.Shape = shape.get();
@@ -242,7 +399,13 @@ impl CharacterVirtualSettings {
 }
 
 impl Default for CharacterVirtualSettings {
-    fn default() -> Self { Self { raw: Default::default(), _shape: None, _inner_body_shape: None } }
+    fn default() -> Self {
+        Self {
+            raw: Default::default(),
+            _shape: None,
+            _inner_body_shape: None,
+        }
+    }
 }
 
 /// Settings for [`CharacterVirtual::extended_update`].
@@ -251,23 +414,47 @@ impl Default for CharacterVirtualSettings {
 pub struct ExtendedUpdateSettings(pub JPC_ExtendedUpdateSettings);
 
 impl ExtendedUpdateSettings {
-    pub fn step_down(&self) -> Vec3 { Vec3::from_jolt(self.0.StickToFloorStepDown) }
-    pub fn set_step_down(&mut self, v: Vec3) { self.0.StickToFloorStepDown = v.into_jolt(); }
+    pub fn step_down(&self) -> Vec3 {
+        Vec3::from_jolt(self.0.StickToFloorStepDown)
+    }
+    pub fn set_step_down(&mut self, v: Vec3) {
+        self.0.StickToFloorStepDown = v.into_jolt();
+    }
 
-    pub fn step_up(&self) -> Vec3 { Vec3::from_jolt(self.0.WalkStairsStepUp) }
-    pub fn set_step_up(&mut self, v: Vec3) { self.0.WalkStairsStepUp = v.into_jolt(); }
+    pub fn step_up(&self) -> Vec3 {
+        Vec3::from_jolt(self.0.WalkStairsStepUp)
+    }
+    pub fn set_step_up(&mut self, v: Vec3) {
+        self.0.WalkStairsStepUp = v.into_jolt();
+    }
 
-    pub fn min_step_forward(&self) -> f32 { self.0.WalkStairsMinStepForward }
-    pub fn set_min_step_forward(&mut self, v: f32) { self.0.WalkStairsMinStepForward = v; }
+    pub fn min_step_forward(&self) -> f32 {
+        self.0.WalkStairsMinStepForward
+    }
+    pub fn set_min_step_forward(&mut self, v: f32) {
+        self.0.WalkStairsMinStepForward = v;
+    }
 
-    pub fn step_forward_test(&self) -> f32 { self.0.WalkStairsStepForwardTest }
-    pub fn set_step_forward_test(&mut self, v: f32) { self.0.WalkStairsStepForwardTest = v; }
+    pub fn step_forward_test(&self) -> f32 {
+        self.0.WalkStairsStepForwardTest
+    }
+    pub fn set_step_forward_test(&mut self, v: f32) {
+        self.0.WalkStairsStepForwardTest = v;
+    }
 
-    pub fn cos_angle_forward_contact(&self) -> f32 { self.0.WalkStairsCosAngleForwardContact }
-    pub fn set_cos_angle_forward_contact(&mut self, v: f32) { self.0.WalkStairsCosAngleForwardContact = v; }
+    pub fn cos_angle_forward_contact(&self) -> f32 {
+        self.0.WalkStairsCosAngleForwardContact
+    }
+    pub fn set_cos_angle_forward_contact(&mut self, v: f32) {
+        self.0.WalkStairsCosAngleForwardContact = v;
+    }
 
-    pub fn step_down_extra(&self) -> Vec3 { Vec3::from_jolt(self.0.WalkStairsStepDownExtra) }
-    pub fn set_step_down_extra(&mut self, v: Vec3) { self.0.WalkStairsStepDownExtra = v.into_jolt(); }
+    pub fn step_down_extra(&self) -> Vec3 {
+        Vec3::from_jolt(self.0.WalkStairsStepDownExtra)
+    }
+    pub fn set_step_down_extra(&mut self, v: Vec3) {
+        self.0.WalkStairsStepDownExtra = v.into_jolt();
+    }
 }
 
 impl Default for ExtendedUpdateSettings {
@@ -352,9 +539,26 @@ pub struct CharacterVirtual {
 }
 
 impl CharacterVirtual {
-    pub fn new(settings: &CharacterVirtualSettings, position: RVec3, rotation: Quat, user_data: u64, physics_system: &PhysicsSystem) -> Self {
-        let raw = unsafe { JPC_CharacterVirtual_new(&settings.raw, position.into_jolt(), rotation.into_jolt(), user_data, physics_system.raw()) };
-        Self { raw, contact_listener: None }
+    pub fn new(
+        settings: &CharacterVirtualSettings,
+        position: RVec3,
+        rotation: Quat,
+        user_data: u64,
+        physics_system: &PhysicsSystem,
+    ) -> Self {
+        let raw = unsafe {
+            JPC_CharacterVirtual_new(
+                &settings.raw,
+                position.into_jolt(),
+                rotation.into_jolt(),
+                user_data,
+                physics_system.raw(),
+            )
+        };
+        Self {
+            raw,
+            contact_listener: None,
+        }
     }
 
     // --- transform ---
@@ -390,12 +594,20 @@ impl CharacterVirtual {
     }
 
     pub fn cancel_velocity_towards_steep_slopes(&self, desired_velocity: Vec3) -> Vec3 {
-        unsafe { JPC_CharacterVirtual_CancelVelocityTowardsSteepSlopes(self.raw, desired_velocity.into_jolt()).into_rolt() }
+        unsafe {
+            JPC_CharacterVirtual_CancelVelocityTowardsSteepSlopes(
+                self.raw,
+                desired_velocity.into_jolt(),
+            )
+            .into_rolt()
+        }
     }
 
     // --- up direction ---
 
-    pub fn up(&self) -> Vec3 { unsafe { JPC_CharacterVirtual_GetUp(self.raw).into_rolt() } }
+    pub fn up(&self) -> Vec3 {
+        unsafe { JPC_CharacterVirtual_GetUp(self.raw).into_rolt() }
+    }
     pub fn set_up(&mut self, up: Vec3) {
         unsafe { JPC_CharacterVirtual_SetUp(self.raw, up.into_jolt()) }
     }
@@ -406,19 +618,37 @@ impl CharacterVirtual {
         unsafe { JPC_CharacterVirtual_GetGroundState(self.raw) }
     }
 
-    pub fn is_supported(&self) -> bool { unsafe { JPC_CharacterVirtual_IsSupported(self.raw) } }
-    pub fn ground_position(&self) -> RVec3 { unsafe { JPC_CharacterVirtual_GetGroundPosition(self.raw).into_rolt() } }
-    pub fn ground_normal(&self) -> Vec3 { unsafe { JPC_CharacterVirtual_GetGroundNormal(self.raw).into_rolt() } }
-    pub fn ground_velocity(&self) -> Vec3 { unsafe { JPC_CharacterVirtual_GetGroundVelocity(self.raw).into_rolt() } }
-    pub fn ground_body_id(&self) -> BodyId { BodyId::new(unsafe { JPC_CharacterVirtual_GetGroundBodyID(self.raw) }) }
-    pub fn ground_user_data(&self) -> u64 { unsafe { JPC_CharacterVirtual_GetGroundUserData(self.raw) } }
+    pub fn is_supported(&self) -> bool {
+        unsafe { JPC_CharacterVirtual_IsSupported(self.raw) }
+    }
+    pub fn ground_position(&self) -> RVec3 {
+        unsafe { JPC_CharacterVirtual_GetGroundPosition(self.raw).into_rolt() }
+    }
+    pub fn ground_normal(&self) -> Vec3 {
+        unsafe { JPC_CharacterVirtual_GetGroundNormal(self.raw).into_rolt() }
+    }
+    pub fn ground_velocity(&self) -> Vec3 {
+        unsafe { JPC_CharacterVirtual_GetGroundVelocity(self.raw).into_rolt() }
+    }
+    pub fn ground_body_id(&self) -> BodyId {
+        BodyId::new(unsafe { JPC_CharacterVirtual_GetGroundBodyID(self.raw) })
+    }
+    pub fn ground_user_data(&self) -> u64 {
+        unsafe { JPC_CharacterVirtual_GetGroundUserData(self.raw) }
+    }
 
     // --- physics properties ---
 
-    pub fn mass(&self) -> f32 { unsafe { JPC_CharacterVirtual_GetMass(self.raw) } }
-    pub fn set_mass(&mut self, mass: f32) { unsafe { JPC_CharacterVirtual_SetMass(self.raw, mass) } }
+    pub fn mass(&self) -> f32 {
+        unsafe { JPC_CharacterVirtual_GetMass(self.raw) }
+    }
+    pub fn set_mass(&mut self, mass: f32) {
+        unsafe { JPC_CharacterVirtual_SetMass(self.raw, mass) }
+    }
 
-    pub fn max_strength(&self) -> f32 { unsafe { JPC_CharacterVirtual_GetMaxStrength(self.raw) } }
+    pub fn max_strength(&self) -> f32 {
+        unsafe { JPC_CharacterVirtual_GetMaxStrength(self.raw) }
+    }
     pub fn set_max_strength(&mut self, strength: f32) {
         unsafe { JPC_CharacterVirtual_SetMaxStrength(self.raw, strength) }
     }
@@ -431,16 +661,22 @@ impl CharacterVirtual {
         unsafe { JPC_CharacterVirtual_SetPenetrationRecoverySpeed(self.raw, speed) }
     }
 
-    pub fn max_num_hits(&self) -> u32 { unsafe { JPC_CharacterVirtual_GetMaxNumHits(self.raw) } }
+    pub fn max_num_hits(&self) -> u32 {
+        unsafe { JPC_CharacterVirtual_GetMaxNumHits(self.raw) }
+    }
     pub fn set_max_num_hits(&mut self, max_hits: u32) {
         unsafe { JPC_CharacterVirtual_SetMaxNumHits(self.raw, max_hits) }
     }
 
-    pub fn max_hits_exceeded(&self) -> bool { unsafe { JPC_CharacterVirtual_GetMaxHitsExceeded(self.raw) } }
+    pub fn max_hits_exceeded(&self) -> bool {
+        unsafe { JPC_CharacterVirtual_GetMaxHitsExceeded(self.raw) }
+    }
 
     // --- user data ---
 
-    pub fn user_data(&self) -> u64 { unsafe { JPC_CharacterVirtual_GetUserData(self.raw) } }
+    pub fn user_data(&self) -> u64 {
+        unsafe { JPC_CharacterVirtual_GetUserData(self.raw) }
+    }
     pub fn set_user_data(&mut self, data: u64) {
         unsafe { JPC_CharacterVirtual_SetUserData(self.raw, data) }
     }
@@ -567,7 +803,10 @@ impl CharacterVirtual {
         unsafe { JPC_CharacterVirtual_SetShape(self.raw, &mut raw) }
     }
 
-    pub fn set_listener(&mut self, listener: Option<impl Into<CharacterContactListenerImpl<'static>>>) {
+    pub fn set_listener(
+        &mut self,
+        listener: Option<impl Into<CharacterContactListenerImpl<'static>>>,
+    ) {
         if let Some(listener) = listener {
             let listener = listener.into();
             let raw = listener.raw();
@@ -588,7 +827,9 @@ impl CharacterVirtual {
         f(self.raw)
     }
 
-    pub fn raw(&self) -> *mut JPC_CharacterVirtual { self.raw }
+    pub fn raw(&self) -> *mut JPC_CharacterVirtual {
+        self.raw
+    }
 }
 
 impl Drop for CharacterVirtual {

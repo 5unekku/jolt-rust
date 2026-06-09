@@ -6,7 +6,7 @@ use joltc_sys::*;
 use crate::{
     Body, BodyFilterImpl, BodyId, BroadPhaseLayerFilterImpl, CastShapeBase, CastShapeCollector,
     CastShapeCollectorImpl, CollideShapeBase, CollideShapeCollector, CollideShapeCollectorImpl,
-    CollideShapeSettings, FromJolt, IntoJolt, ObjectLayerFilterImpl, RefConst, RVec3,
+    CollideShapeSettings, FromJolt, IntoJolt, ObjectLayerFilterImpl, RVec3, RefConst,
     ShapeCastSettings, ShapeFilterImpl, Vec3,
 };
 
