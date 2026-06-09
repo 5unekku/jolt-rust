@@ -339,6 +339,24 @@ impl Constraint {
         unsafe { JPC_Constraint_NotifyShapeChanged(*self.0, body_id.raw(), delta_com.into_jolt()) }
     }
 
+    /// override the number of velocity solver iterations for this constraint (0 = use global setting).
+    pub fn num_velocity_steps_override(&self) -> u32 {
+        unsafe { JPC_Constraint_GetNumVelocityStepsOverride(*self.0) }
+    }
+
+    pub fn set_num_velocity_steps_override(&self, steps: u32) {
+        unsafe { JPC_Constraint_SetNumVelocityStepsOverride(*self.0, steps) }
+    }
+
+    /// override the number of position solver iterations for this constraint (0 = use global setting).
+    pub fn num_position_steps_override(&self) -> u32 {
+        unsafe { JPC_Constraint_GetNumPositionStepsOverride(*self.0) }
+    }
+
+    pub fn set_num_position_steps_override(&self, steps: u32) {
+        unsafe { JPC_Constraint_SetNumPositionStepsOverride(*self.0, steps) }
+    }
+
     pub fn constraint_settings_base(&self) -> JPC_ConstraintSettings {
         unsafe {
             let obj = JPC_Constraint_GetConstraintSettings(*self.0);

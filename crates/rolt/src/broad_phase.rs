@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{BroadPhaseLayerFilterImpl, FromJolt, IntoJolt, ObjectLayerFilterImpl, Vec3};
+use crate::{BroadPhaseLayerFilterImpl, FromJolt, IntoJolt, Mat4, ObjectLayerFilterImpl, Vec3};
 
 /// Opaque handle to Jolt's BroadPhaseQuery interface.
 ///
@@ -123,6 +123,33 @@ impl<'physics_system> BroadPhaseQuery<'physics_system> {
             JPC_BroadPhaseQuery_CastAABox(
                 self.raw,
                 &cast,
+                collector.raw,
+                broad_phase_layer_filter.map_or(std::ptr::null(), |f| f.raw()),
+                object_layer_filter.map_or(std::ptr::null(), |f| f.raw()),
+            )
+        }
+    }
+
+    /// Collide an oriented box and collect overlapping body IDs.
+    ///
+    /// `orientation` is the full 4x4 rotation/translation of the box center.
+    /// `half_extents` are the half-sizes along each local axis.
+    pub fn collide_oriented_box(
+        &self,
+        orientation: Mat4,
+        half_extents: Vec3,
+        collector: &mut BodyIDCollector<'_>,
+        broad_phase_layer_filter: Option<&BroadPhaseLayerFilterImpl<'_>>,
+        object_layer_filter: Option<&ObjectLayerFilterImpl<'_>>,
+    ) {
+        let obb = JPC_OrientedBox {
+            Orientation: orientation.into_jolt(),
+            HalfExtents: half_extents.into_jolt(),
+        };
+        unsafe {
+            JPC_BroadPhaseQuery_CollideOrientedBox(
+                self.raw,
+                &obb,
                 collector.raw,
                 broad_phase_layer_filter.map_or(std::ptr::null(), |f| f.raw()),
                 object_layer_filter.map_or(std::ptr::null(), |f| f.raw()),

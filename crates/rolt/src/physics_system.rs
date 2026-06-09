@@ -7,7 +7,7 @@ use crate::{
     BodyActivationListenerImpl, BodyDrawSettings, BodyInterface, BodyLockInterface,
     BroadPhaseLayerInterfaceImpl, BroadPhaseQuery, ContactListenerImpl, DebugRendererSimpleImpl,
     JobSystem, NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
-    SimShapeFilterImpl, StateRecorder, TempAllocator, VehicleConstraint,
+    SimShapeFilterImpl, SoftBodyContactListenerImpl, StateRecorder, TempAllocator, VehicleConstraint,
 };
 
 /// The root of everything for a physics simulation.
@@ -21,6 +21,7 @@ pub struct PhysicsSystem {
     sim_shape_filter: Option<SimShapeFilterImpl<'static>>,
     contact_listener: Option<ContactListenerImpl<'static>>,
     body_activation_listener: Option<BodyActivationListenerImpl<'static>>,
+    soft_body_contact_listener: Option<SoftBodyContactListenerImpl<'static>>,
 }
 
 impl PhysicsSystem {
@@ -34,6 +35,7 @@ impl PhysicsSystem {
                 sim_shape_filter: None,
                 contact_listener: None,
                 body_activation_listener: None,
+                soft_body_contact_listener: None,
             }
         }
     }
@@ -289,6 +291,11 @@ impl PhysicsSystem {
         }
     }
 
+    /// Returns the currently installed body activation listener, if any.
+    pub fn body_activation_listener(&self) -> Option<&BodyActivationListenerImpl<'static>> {
+        self.body_activation_listener.as_ref()
+    }
+
     pub fn set_combine_friction(&mut self, function: JPC_CombineFunction) {
         unsafe { JPC_PhysicsSystem_SetCombineFriction(self.raw, function) }
     }
@@ -312,6 +319,31 @@ impl PhysicsSystem {
     /// draw constraint reference frames (only available with `JPH_DEBUG_RENDERER`).
     pub fn draw_constraint_reference_frame(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
         unsafe { JPC_PhysicsSystem_DrawConstraintReferenceFrame(self.raw, renderer.raw()) }
+    }
+
+    /// draw all constraints (only available with `JPH_DEBUG_RENDERER`).
+    pub fn draw_constraints(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
+        unsafe { JPC_PhysicsSystem_DrawConstraints(self.raw, renderer.raw()) }
+    }
+
+    pub fn set_soft_body_contact_listener(
+        &mut self,
+        listener: Option<impl Into<SoftBodyContactListenerImpl<'static>>>,
+    ) {
+        if let Some(listener) = listener {
+            let listener = listener.into();
+            let raw = listener.raw();
+            self.soft_body_contact_listener = Some(listener);
+            unsafe { JPC_PhysicsSystem_SetSoftBodyContactListener(self.raw, raw) }
+        } else {
+            self.soft_body_contact_listener = None;
+            unsafe { JPC_PhysicsSystem_SetSoftBodyContactListener(self.raw, ptr::null_mut()) }
+        }
+    }
+
+    /// Returns the currently installed soft body contact listener, if any.
+    pub fn soft_body_contact_listener(&self) -> Option<&SoftBodyContactListenerImpl<'static>> {
+        self.soft_body_contact_listener.as_ref()
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PhysicsSystem) -> R) -> R {

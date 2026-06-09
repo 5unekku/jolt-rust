@@ -802,6 +802,104 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// SoftBodyContactListener
+
+/// Settings that control how a soft body contact is resolved.
+///
+/// See also: Jolt's [`SoftBodyContactSettings`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/struct_soft_body_contact_settings.html).
+pub struct SoftBodyContactSettings(pub JPC_SoftBodyContactSettings);
+
+impl SoftBodyContactSettings {
+    pub fn inv_mass_scale1(&self) -> f32 { self.0.InvMassScale1 }
+    pub fn set_inv_mass_scale1(&mut self, v: f32) { self.0.InvMassScale1 = v; }
+    pub fn inv_mass_scale2(&self) -> f32 { self.0.InvMassScale2 }
+    pub fn set_inv_mass_scale2(&mut self, v: f32) { self.0.InvMassScale2 = v; }
+    pub fn inv_inertia_scale2(&self) -> f32 { self.0.InvInertiaScale2 }
+    pub fn set_inv_inertia_scale2(&mut self, v: f32) { self.0.InvInertiaScale2 = v; }
+    pub fn is_sensor(&self) -> bool { self.0.IsSensor }
+    pub fn set_is_sensor(&mut self, v: bool) { self.0.IsSensor = v; }
+}
+
+/// Opaque handle to a soft body manifold — use accessors to inspect contacts.
+///
+/// See also: Jolt's [`SoftBodyManifold`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_soft_body_manifold.html).
+pub struct SoftBodyManifold {
+    raw: *const JPC_SoftBodyManifold,
+}
+
+impl SoftBodyManifold {
+    pub fn body_id(&self) -> BodyId {
+        BodyId::new(unsafe { JPC_SoftBodyManifold_GetBodyID(self.raw) })
+    }
+
+    pub fn num_vertices(&self) -> u32 {
+        unsafe { JPC_SoftBodyManifold_GetNumVertices(self.raw) }
+    }
+
+    pub fn vertex_has_contact(&self, index: u32) -> bool {
+        unsafe { JPC_SoftBodyManifold_VertexHasContact(self.raw, index) }
+    }
+}
+
+/// Notified when a soft body contacts a rigid body.
+///
+/// See also: Jolt's [`SoftBodyContactListener`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_soft_body_contact_listener.html).
+pub trait SoftBodyContactListener {
+    /// called before the contact is resolved — return `JPC_ValidateResult_AcceptAllContactsForThisBodyPair`
+    /// to accept or `JPC_ValidateResult_RejectContact` to reject.
+    fn on_soft_body_contact_validate(
+        &self,
+        soft_body: &crate::Body<'_>,
+        other_body: &crate::Body<'_>,
+        settings: &mut SoftBodyContactSettings,
+    ) -> JPC_ValidateResult;
+
+    /// called after the contact manifold has been finalized.
+    fn on_soft_body_contact_added(
+        &self,
+        soft_body: &crate::Body<'_>,
+        manifold: &SoftBodyManifold,
+    );
+}
+
+define_impl_struct!(mut SoftBodyContactListener {
+    OnSoftBodyContactValidate,
+    OnSoftBodyContactAdded,
+});
+
+struct SoftBodyContactListenerBridge<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T: SoftBodyContactListener> SoftBodyContactListenerBridge<T> {
+    unsafe extern "C" fn OnSoftBodyContactValidate(
+        this: *mut c_void,
+        soft_body: *const JPC_Body,
+        other_body: *const JPC_Body,
+        settings: *mut JPC_SoftBodyContactSettings,
+    ) -> u32 {
+        let this = this.cast::<T>().as_ref().unwrap();
+        let soft_body = crate::Body::new(soft_body.cast_mut());
+        let other_body = crate::Body::new(other_body.cast_mut());
+        let mut wrapped = SoftBodyContactSettings(*settings);
+        let result = this.on_soft_body_contact_validate(&soft_body, &other_body, &mut wrapped);
+        *settings = wrapped.0;
+        result
+    }
+
+    unsafe extern "C" fn OnSoftBodyContactAdded(
+        this: *mut c_void,
+        soft_body: *const JPC_Body,
+        manifold: *const JPC_SoftBodyManifold,
+    ) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        let soft_body = crate::Body::new(soft_body.cast_mut());
+        let manifold = SoftBodyManifold { raw: manifold };
+        this.on_soft_body_contact_added(&soft_body, &manifold);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BodyActivationListener
 
 /// Notified when bodies activate or deactivate.

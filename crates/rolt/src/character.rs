@@ -348,12 +348,13 @@ pub struct CharacterExtendedUpdateArgs<'a> {
 /// See also: Jolt's [`CharacterVirtual`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_character_virtual.html) class.
 pub struct CharacterVirtual {
     raw: *mut JPC_CharacterVirtual,
+    contact_listener: Option<CharacterContactListenerImpl<'static>>,
 }
 
 impl CharacterVirtual {
     pub fn new(settings: &CharacterVirtualSettings, position: RVec3, rotation: Quat, user_data: u64, physics_system: &PhysicsSystem) -> Self {
         let raw = unsafe { JPC_CharacterVirtual_new(&settings.raw, position.into_jolt(), rotation.into_jolt(), user_data, physics_system.raw()) };
-        Self { raw }
+        Self { raw, contact_listener: None }
     }
 
     // --- transform ---
@@ -566,9 +567,21 @@ impl CharacterVirtual {
         unsafe { JPC_CharacterVirtual_SetShape(self.raw, &mut raw) }
     }
 
-    pub fn set_listener(&mut self, listener: Option<&CharacterContactListenerImpl<'_>>) {
-        let raw = listener.map_or(std::ptr::null_mut(), |l| l.raw());
-        unsafe { JPC_CharacterVirtual_SetListener(self.raw, raw) }
+    pub fn set_listener(&mut self, listener: Option<impl Into<CharacterContactListenerImpl<'static>>>) {
+        if let Some(listener) = listener {
+            let listener = listener.into();
+            let raw = listener.raw();
+            self.contact_listener = Some(listener);
+            unsafe { JPC_CharacterVirtual_SetListener(self.raw, raw) }
+        } else {
+            self.contact_listener = None;
+            unsafe { JPC_CharacterVirtual_SetListener(self.raw, std::ptr::null_mut()) }
+        }
+    }
+
+    /// Returns the currently installed contact listener, if any.
+    pub fn contact_listener(&self) -> Option<&CharacterContactListenerImpl<'static>> {
+        self.contact_listener.as_ref()
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_CharacterVirtual) -> R) -> R {
