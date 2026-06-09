@@ -444,23 +444,16 @@ impl<'physics_system> BodyInterface<'physics_system> {
 
     // --- batch add ---
 
-    /// Begin a batch-add operation. Returns an opaque state handle.
-    /// Must be followed by either `add_bodies_finalize` or `add_bodies_abort`.
-    pub fn add_bodies_prepare(&self, body_ids: &mut Vec<BodyId>) -> *mut std::ffi::c_void {
+    /// Begin a batch-add operation.
+    ///
+    /// Returns an [`AddBodiesState`] guard — call [`AddBodiesState::finalize`] to commit
+    /// or [`AddBodiesState::abort`] to cancel. Dropping without either automatically aborts.
+    pub fn add_bodies_prepare<'a>(&'a self, body_ids: Vec<BodyId>) -> AddBodiesState<'a> {
         let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
-        unsafe { JPC_BodyInterface_AddBodiesPrepare(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32) }
-    }
-
-    /// commit a prepared batch — bodies become active in the broadphase.
-    pub fn add_bodies_finalize(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void, activation: JPC_Activation) {
-        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
-        unsafe { JPC_BodyInterface_AddBodiesFinalize(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state, activation) }
-    }
-
-    /// cancel a prepared batch without adding anything.
-    pub fn add_bodies_abort(&self, body_ids: &[BodyId], add_state: *mut std::ffi::c_void) {
-        let ids: Vec<JPC_BodyID> = body_ids.iter().map(|id| id.raw()).collect();
-        unsafe { JPC_BodyInterface_AddBodiesAbort(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32, add_state) }
+        let state = unsafe {
+            JPC_BodyInterface_AddBodiesPrepare(self.raw, ids.as_ptr().cast_mut(), ids.len() as i32)
+        };
+        AddBodiesState::new(self.raw, ids, state)
     }
 
     // --- bulk activate/deactivate/remove ---
@@ -558,4 +551,66 @@ impl<'physics_system> BodyInterface<'physics_system> {
     }
 
     pub fn raw(&self) -> *mut JPC_BodyInterface { self.raw }
+}
+
+/// RAII guard for a batch-add operation started by [`BodyInterface::add_bodies_prepare`].
+///
+/// Dropping this without calling [`finalize`][Self::finalize] or [`abort`][Self::abort]
+/// automatically aborts — so the physics system is never left in an inconsistent state.
+pub struct AddBodiesState<'interface> {
+    interface: *mut JPC_BodyInterface,
+    ids: Vec<JPC_BodyID>,
+    state: *mut std::ffi::c_void,
+    _phantom: PhantomData<&'interface ()>,
+}
+
+impl<'interface> AddBodiesState<'interface> {
+    // Needed because the struct is constructed in BodyInterface::add_bodies_prepare, not here.
+    // The extra field suppresses the dead_code lint without making the field pub.
+    fn new(interface: *mut JPC_BodyInterface, ids: Vec<JPC_BodyID>, state: *mut std::ffi::c_void) -> Self {
+        Self { interface, ids, state, _phantom: PhantomData }
+    }
+
+    /// Commit the batch — bodies become active in the broadphase.
+    pub fn finalize(mut self, activation: JPC_Activation) {
+        unsafe {
+            JPC_BodyInterface_AddBodiesFinalize(
+                self.interface,
+                self.ids.as_mut_ptr(),
+                self.ids.len() as i32,
+                self.state,
+                activation,
+            )
+        }
+        // clear state so Drop doesn't abort
+        self.state = std::ptr::null_mut();
+    }
+
+    /// Cancel the batch without adding anything.
+    pub fn abort(mut self) {
+        unsafe {
+            JPC_BodyInterface_AddBodiesAbort(
+                self.interface,
+                self.ids.as_mut_ptr(),
+                self.ids.len() as i32,
+                self.state,
+            )
+        }
+        self.state = std::ptr::null_mut();
+    }
+}
+
+impl Drop for AddBodiesState<'_> {
+    fn drop(&mut self) {
+        if !self.state.is_null() {
+            unsafe {
+                JPC_BodyInterface_AddBodiesAbort(
+                    self.interface,
+                    self.ids.as_mut_ptr(),
+                    self.ids.len() as i32,
+                    self.state,
+                )
+            }
+        }
+    }
 }

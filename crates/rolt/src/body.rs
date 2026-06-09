@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use joltc_sys::*;
 
-use crate::{BodyId, BroadPhaseLayer, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RVec3, Vec3, RMat4};
+use crate::{BodyId, BroadPhaseLayer, IntoJolt, IntoRolt, Mat4, ObjectLayer, Quat, RefConst, RVec3, Vec3, RMat4};
 
 /// See also: Jolt's [`Body`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body.html) class.
 pub struct Body<'interface> {
@@ -149,8 +149,9 @@ impl<'interface> Body<'interface> {
         unsafe { JPC_Body_GetCenterOfMassTransform(self.inner).into_rolt() }
     }
 
-    pub fn shape(&self) -> *const JPC_Shape {
-        unsafe { JPC_Body_GetShape(self.inner) }
+    /// the body's shape, reference-counted so it stays alive independent of this body.
+    pub fn shape(&self) -> RefConst<JPC_Shape> {
+        unsafe { RefConst::from_active(JPC_Body_GetShape(self.inner)) }
     }
 
     pub fn user_data(&self) -> u64 { unsafe { JPC_Body_GetUserData(self.inner) } }
