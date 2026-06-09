@@ -110,6 +110,27 @@ impl Character {
         unsafe { JPC_Character_SetShape(self.raw, shape.get(), max_penetration_depth, lock_bodies) }
     }
 
+    pub fn add_impulse(&mut self, impulse: Vec3) {
+        unsafe { JPC_Character_AddImpulse(self.raw, impulse.into_jolt()) }
+    }
+
+    pub fn position_and_rotation(&self, lock_bodies: bool) -> (RVec3, Quat) {
+        let mut position = unsafe { std::mem::zeroed::<JPC_RVec3>() };
+        let mut rotation = unsafe { std::mem::zeroed::<JPC_Quat>() };
+        unsafe { JPC_Character_GetPositionAndRotation(self.raw, &mut position, &mut rotation, lock_bodies) }
+        (position.into_rolt(), rotation.into_rolt())
+    }
+
+    pub fn set_linear_and_angular_velocity(&mut self, linear: Vec3, angular: Vec3, lock_bodies: bool) {
+        unsafe {
+            JPC_Character_SetLinearAndAngularVelocity(self.raw, linear.into_jolt(), angular.into_jolt(), lock_bodies)
+        }
+    }
+
+    pub fn world_transform(&self, lock_bodies: bool) -> JPC_RMat44 {
+        unsafe { JPC_Character_GetWorldTransform(self.raw, lock_bodies) }
+    }
+
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Character) -> R) -> R { f(self.raw) }
     pub fn raw(&self) -> *mut JPC_Character { self.raw }
 }

@@ -477,6 +477,35 @@ impl VehicleConstraint {
         unsafe { JPC_VehicleConstraint_AsConstraint(self.raw) }
     }
 
+    pub fn vehicle_body(&self) -> Body<'_> {
+        unsafe { Body::new(JPC_VehicleConstraint_GetVehicleBody(self.raw)) }
+    }
+
+    /// Maximum pitch/roll angle in radians.
+    pub fn max_pitch_roll_angle(&self) -> f32 {
+        unsafe { JPC_VehicleConstraint_GetMaxPitchRollAngle(self.raw) }
+    }
+
+    pub fn set_max_pitch_roll_angle(&mut self, angle: f32) {
+        unsafe { JPC_VehicleConstraint_SetMaxPitchRollAngle(self.raw, angle) }
+    }
+
+    pub fn num_steps_between_collision_test_active(&self) -> u32 {
+        unsafe { JPC_VehicleConstraint_GetNumStepsBetweenCollisionTestActive(self.raw) }
+    }
+
+    pub fn set_num_steps_between_collision_test_active(&mut self, steps: u32) {
+        unsafe { JPC_VehicleConstraint_SetNumStepsBetweenCollisionTestActive(self.raw, steps) }
+    }
+
+    pub fn num_steps_between_collision_test_inactive(&self) -> u32 {
+        unsafe { JPC_VehicleConstraint_GetNumStepsBetweenCollisionTestInactive(self.raw) }
+    }
+
+    pub fn set_num_steps_between_collision_test_inactive(&mut self, steps: u32) {
+        unsafe { JPC_VehicleConstraint_SetNumStepsBetweenCollisionTestInactive(self.raw, steps) }
+    }
+
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_VehicleConstraint) -> R) -> R {
         f(self.raw)
     }

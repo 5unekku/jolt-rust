@@ -508,5 +508,41 @@ impl<'physics_system> BodyInterface<'physics_system> {
         BodyId::new(unsafe { JPC_BodyInterface_CreateAndAddSoftBody(self.raw, &settings.0, activation) })
     }
 
+    pub fn is_sensor(&self, body_id: BodyId) -> bool {
+        unsafe { JPC_BodyInterface_IsSensor(self.raw, body_id.raw()) }
+    }
+
+    pub fn set_is_sensor(&self, body_id: BodyId, is_sensor: bool) {
+        unsafe { JPC_BodyInterface_SetIsSensor(self.raw, body_id.raw(), is_sensor) }
+    }
+
+    pub fn max_linear_velocity(&self, body_id: BodyId) -> f32 {
+        unsafe { JPC_BodyInterface_GetMaxLinearVelocity(self.raw, body_id.raw()) }
+    }
+
+    pub fn set_max_linear_velocity(&self, body_id: BodyId, max_linear_velocity: f32) {
+        unsafe { JPC_BodyInterface_SetMaxLinearVelocity(self.raw, body_id.raw(), max_linear_velocity) }
+    }
+
+    pub fn max_angular_velocity(&self, body_id: BodyId) -> f32 {
+        unsafe { JPC_BodyInterface_GetMaxAngularVelocity(self.raw, body_id.raw()) }
+    }
+
+    pub fn set_max_angular_velocity(&self, body_id: BodyId, max_angular_velocity: f32) {
+        unsafe { JPC_BodyInterface_SetMaxAngularVelocity(self.raw, body_id.raw(), max_angular_velocity) }
+    }
+
+    pub fn reset_sleep_timer(&self, body_id: BodyId) {
+        unsafe { JPC_BodyInterface_ResetSleepTimer(self.raw, body_id.raw()) }
+    }
+
+    pub fn collision_group(&self, body_id: BodyId) -> JPC_CollisionGroup {
+        unsafe { JPC_BodyInterface_GetCollisionGroup(self.raw, body_id.raw()) }
+    }
+
+    pub fn set_collision_group(&self, body_id: BodyId, group: &JPC_CollisionGroup) {
+        unsafe { JPC_BodyInterface_SetCollisionGroup(self.raw, body_id.raw(), group) }
+    }
+
     pub fn raw(&self) -> *mut JPC_BodyInterface { self.raw }
 }

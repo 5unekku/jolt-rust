@@ -793,3 +793,35 @@ impl<T: CharacterContactListener> CharacterContactListenerBridge<T> {
         );
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// BodyActivationListener
+
+/// Notified when bodies activate or deactivate.
+///
+/// See also: Jolt's [`BodyActivationListener`](https://jrouwe.github.io/JoltPhysicsDocs/5.5.0/class_body_activation_listener.html).
+pub trait BodyActivationListener {
+    fn on_body_activated(&self, body_id: BodyId, body_user_data: u64);
+    fn on_body_deactivated(&self, body_id: BodyId, body_user_data: u64);
+}
+
+define_impl_struct!(mut BodyActivationListener {
+    OnBodyActivated,
+    OnBodyDeactivated,
+});
+
+struct BodyActivationListenerBridge<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T: BodyActivationListener> BodyActivationListenerBridge<T> {
+    unsafe extern "C" fn OnBodyActivated(this: *mut c_void, body_id: JPC_BodyID, body_user_data: u64) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_body_activated(BodyId::new(body_id), body_user_data);
+    }
+
+    unsafe extern "C" fn OnBodyDeactivated(this: *mut c_void, body_id: JPC_BodyID, body_user_data: u64) {
+        let this = this.cast::<T>().as_ref().unwrap();
+        this.on_body_deactivated(BodyId::new(body_id), body_user_data);
+    }
+}

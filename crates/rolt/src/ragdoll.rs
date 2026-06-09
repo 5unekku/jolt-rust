@@ -1,6 +1,6 @@
 use joltc_sys::*;
 
-use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, PhysicsSystem, Ref, Vec3};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Mat4, PhysicsSystem, Quat, Ref, RVec3, Vec3};
 
 /// Settings for a ragdoll — a collection of bodies connected by constraints.
 ///
@@ -183,6 +183,26 @@ impl Ragdoll {
                 lock_bodies,
             )
         }
+    }
+
+    pub fn set_linear_and_angular_velocity(&mut self, linear: Vec3, angular: Vec3, lock_bodies: bool) {
+        unsafe {
+            JPC_Ragdoll_SetLinearAndAngularVelocity(self.raw, linear.into_jolt(), angular.into_jolt(), lock_bodies)
+        }
+    }
+
+    /// Returns the world-space AABB containing all ragdoll bodies.
+    pub fn world_space_bounds(&self, lock_bodies: bool) -> (Vec3, Vec3) {
+        let b = unsafe { JPC_Ragdoll_GetWorldSpaceBounds(self.raw, lock_bodies) };
+        (Vec3::from_jolt(b.Min), Vec3::from_jolt(b.Max))
+    }
+
+    /// Returns the position and rotation of the ragdoll root body.
+    pub fn root_transform(&self, lock_bodies: bool) -> (RVec3, Quat) {
+        let mut position = unsafe { std::mem::zeroed::<JPC_RVec3>() };
+        let mut rotation = unsafe { std::mem::zeroed::<JPC_Quat>() };
+        unsafe { JPC_Ragdoll_GetRootTransform(self.raw, &mut position, &mut rotation, lock_bodies) }
+        (position.into_rolt(), rotation.into_rolt())
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_Ragdoll) -> R) -> R {

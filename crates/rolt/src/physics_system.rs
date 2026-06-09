@@ -2,12 +2,12 @@ use std::ptr;
 
 use joltc_sys::*;
 
-use crate::{IntoJolt, IntoRolt};
+use crate::{BodyId, FromJolt, IntoJolt, IntoRolt, Vec3};
 use crate::{
-    BodyDrawSettings, BodyInterface, BodyLockInterface, BroadPhaseLayerInterfaceImpl,
-    ContactListenerImpl, DebugRendererSimpleImpl, JobSystem, NarrowPhaseQuery,
-    ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl, SimShapeFilterImpl,
-    StateRecorder, TempAllocator, VehicleConstraint,
+    BodyActivationListenerImpl, BodyDrawSettings, BodyInterface, BodyLockInterface,
+    BroadPhaseLayerInterfaceImpl, BroadPhaseQuery, ContactListenerImpl, DebugRendererSimpleImpl,
+    JobSystem, NarrowPhaseQuery, ObjectLayerPairFilterImpl, ObjectVsBroadPhaseLayerFilterImpl,
+    SimShapeFilterImpl, StateRecorder, TempAllocator, VehicleConstraint,
 };
 
 /// The root of everything for a physics simulation.
@@ -20,6 +20,7 @@ pub struct PhysicsSystem {
     object_layer_pair_filter: Option<ObjectLayerPairFilterImpl<'static>>,
     sim_shape_filter: Option<SimShapeFilterImpl<'static>>,
     contact_listener: Option<ContactListenerImpl<'static>>,
+    body_activation_listener: Option<BodyActivationListenerImpl<'static>>,
 }
 
 impl PhysicsSystem {
@@ -32,6 +33,7 @@ impl PhysicsSystem {
                 object_layer_pair_filter: None,
                 sim_shape_filter: None,
                 contact_listener: None,
+                body_activation_listener: None,
             }
         }
     }
@@ -212,6 +214,101 @@ impl PhysicsSystem {
     /// Restore physics state from `recorder`.  Returns `false` on failure.
     pub fn restore_state(&mut self, recorder: &mut StateRecorder) -> bool {
         unsafe { JPC_PhysicsSystem_RestoreState(self.raw, recorder.raw()) }
+    }
+
+    pub fn physics_settings(&self) -> JPC_PhysicsSettings {
+        unsafe { JPC_PhysicsSystem_GetPhysicsSettings(self.raw) }
+    }
+
+    pub fn set_physics_settings(&mut self, settings: JPC_PhysicsSettings) {
+        unsafe { JPC_PhysicsSystem_SetPhysicsSettings(self.raw, settings) }
+    }
+
+    pub fn body_stats(&self) -> JPC_BodyStats {
+        unsafe { JPC_PhysicsSystem_GetBodyStats(self.raw) }
+    }
+
+    pub fn add_constraints(&self, constraints: &[&crate::Constraint]) {
+        let mut ptrs: Vec<*mut JPC_Constraint> = constraints.iter().map(|c| c.raw()).collect();
+        unsafe { JPC_PhysicsSystem_AddConstraints(self.raw, ptrs.as_mut_ptr(), ptrs.len() as i32) }
+    }
+
+    pub fn remove_constraints(&self, constraints: &[&crate::Constraint]) {
+        let mut ptrs: Vec<*mut JPC_Constraint> = constraints.iter().map(|c| c.raw()).collect();
+        unsafe { JPC_PhysicsSystem_RemoveConstraints(self.raw, ptrs.as_mut_ptr(), ptrs.len() as i32) }
+    }
+
+    /// Body interface without body locking — use with care in multithreaded scenarios.
+    pub fn body_interface_no_lock(&self) -> BodyInterface<'_> {
+        unsafe {
+            let raw = JPC_PhysicsSystem_GetBodyInterfaceNoLock(self.raw);
+            BodyInterface::new(raw.cast_mut())
+        }
+    }
+
+    /// Narrow phase query without body locking — use with care.
+    pub fn narrow_phase_query_no_lock(&self) -> NarrowPhaseQuery<'_> {
+        unsafe {
+            let raw = JPC_PhysicsSystem_GetNarrowPhaseQueryNoLock(self.raw);
+            NarrowPhaseQuery::new(raw)
+        }
+    }
+
+    /// Body lock interface without body locking.
+    pub fn body_lock_interface_no_lock(&self) -> BodyLockInterface<'_> {
+        unsafe {
+            let raw = JPC_PhysicsSystem_GetBodyLockInterfaceNoLock(self.raw);
+            BodyLockInterface::new(raw)
+        }
+    }
+
+    /// Returns `true` if the two bodies were in contact during the last simulation step.
+    pub fn were_bodies_in_contact(&self, body1: BodyId, body2: BodyId) -> bool {
+        unsafe { JPC_PhysicsSystem_WereBodiesInContact(self.raw, body1.raw(), body2.raw()) }
+    }
+
+    /// Bounding box containing all bodies.
+    pub fn bounds(&self) -> (Vec3, Vec3) {
+        let b = unsafe { JPC_PhysicsSystem_GetBounds(self.raw) };
+        (Vec3::from_jolt(b.Min), Vec3::from_jolt(b.Max))
+    }
+
+    pub fn set_body_activation_listener(
+        &mut self,
+        listener: Option<impl Into<BodyActivationListenerImpl<'static>>>,
+    ) {
+        if let Some(listener) = listener {
+            let listener = listener.into();
+            let raw = listener.raw();
+            self.body_activation_listener = Some(listener);
+            unsafe { JPC_PhysicsSystem_SetBodyActivationListener(self.raw, raw) }
+        } else {
+            self.body_activation_listener = None;
+            unsafe { JPC_PhysicsSystem_SetBodyActivationListener(self.raw, ptr::null_mut()) }
+        }
+    }
+
+    pub fn set_combine_friction(&mut self, function: JPC_CombineFunction) {
+        unsafe { JPC_PhysicsSystem_SetCombineFriction(self.raw, function) }
+    }
+
+    pub fn set_combine_restitution(&mut self, function: JPC_CombineFunction) {
+        unsafe { JPC_PhysicsSystem_SetCombineRestitution(self.raw, function) }
+    }
+
+    pub fn broad_phase_query(&self) -> BroadPhaseQuery<'_> {
+        unsafe {
+            let raw = JPC_PhysicsSystem_GetBroadPhaseQuery(self.raw);
+            BroadPhaseQuery::new(raw)
+        }
+    }
+
+    pub fn draw_constraint_limits(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
+        unsafe { JPC_PhysicsSystem_DrawConstraintLimits(self.raw, renderer.raw()) }
+    }
+
+    pub fn draw_constraint_reference_frame(&mut self, renderer: &DebugRendererSimpleImpl<'_>) {
+        unsafe { JPC_PhysicsSystem_DrawConstraintReferenceFrame(self.raw, renderer.raw()) }
     }
 
     pub fn with_raw<R>(&self, f: impl FnOnce(*mut JPC_PhysicsSystem) -> R) -> R {

@@ -10,6 +10,7 @@ use joltc_sys::*;
 
 mod body;
 mod body_interface;
+mod broad_phase;
 mod body_lock;
 mod character;
 mod constraint;
@@ -32,6 +33,7 @@ mod vehicle;
 
 pub use crate::body::*;
 pub use crate::body_interface::*;
+pub use crate::broad_phase::*;
 pub use crate::body_lock::*;
 pub use crate::character::*;
 pub use crate::constraint::*;
